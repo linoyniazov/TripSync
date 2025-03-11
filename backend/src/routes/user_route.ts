@@ -1,25 +1,9 @@
-import express, { Request, Response } from "express";
-const router = express.Router();
+import express from "express";
 import userController from "../controllers/user_controller";
+import authMiddleware from "../middlewares/auth_middleware";
+const router = express.Router();
 
-router.post('/', userController.create.bind(userController));
-
-router.get('/getusers', userController.getAll.bind(userController));
-
-router.get("/:id", (req: Request, res: Response) => {
-    userController.getById(req, res);
-});
-
-router.patch("/:id", (req: Request, res: Response) => {
-    userController.update(req, res);
-});
-
-router.put("/:id", (req: Request, res: Response) => {
-    userController.update(req, res);
-});
-
-router.delete("/:id", (req: Request, res: Response) => {
-    userController.deleteItem(req, res);
-});
+router.get("/:userId", authMiddleware, userController.getUserProfile);
+router.patch("/:userId", authMiddleware, userController.updateUserProfile);
 
 export default router;

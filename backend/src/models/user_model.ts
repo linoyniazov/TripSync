@@ -1,25 +1,49 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
+import { IPost } from "./post_model";
 
 // Define User schema
 export interface IUser {
-  username: string;
   email: string;
   password: string;
-  profileImage?: string;
-  bio?: string;
-  refreshToken?: string[];
-  createdAt: Date;
+  _id?: string;
+  refreshTokens?: string[];
+  name: string;
+  profilePhoto?: string;
+  aboutMe?: string;
+  posts?: Types.Array<IPost>;
 }
 
-const UserSchema: Schema = new Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  profileImage: { type: String },
-  bio: { type: String },
-  refreshToken: { type: [String], default: [] },
-  createdAt: { type: Date, default: Date.now }
+const userSchema = new mongoose.Schema<IUser>({
+  email: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  refreshTokens: {
+    type: [String],
+    required: false,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  profilePhoto: {
+    type: String,
+  },
+  aboutMe: {
+    type: String,
+  },
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "post_model",
+    },
+  ],
 });
 
-const UserModel = mongoose.model<IUser>("User", UserSchema);
+const UserModel = mongoose.model<IUser>("User", userSchema);
+
 export default UserModel;

@@ -6,6 +6,7 @@ import express, { Express } from "express";
 import userRoute from "./routes/user_route";
 import postRoute from "./routes/post_route";
 import postInteraction from "./routes/post_interaction_route";
+import authRoute from "./routes/auth_route";
 
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/user", userRoute);
 app.use("/post", postRoute);
 app.use("/postInteraction", postInteraction);
+app.use("/auth", authRoute);
 
 const db = mongoose.connection;
 db.on("error", (error) => console.error(error));
