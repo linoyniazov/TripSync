@@ -15,8 +15,5 @@ router.patch("/:id", (req: Request, res: Response) => {
 });
 router.delete('/:id', postController.deleteById.bind(postController));
 
-router.put("/:id", (req: Request, res: Response) => {
-    postController.updateById(req, res);
-});
 
 export default router;
