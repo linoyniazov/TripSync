@@ -3,7 +3,6 @@ import User from "../models/user_model";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
 const register = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -64,13 +63,11 @@ const login = async (req: Request, res: Response) => {
       user.refreshTokens.push(refreshToken);
     }
     await user.save();
-    return res
-      .status(200)
-      .json({
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        userId: user._id,
-      });
+    return res.status(200).json({
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      userId: user._id,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).send("Error logging in");
@@ -84,37 +81,33 @@ const logout = async (req: Request, res: Response) => {
   // Check if the refresh token is missing
   if (refreshToken == null) return res.sendStatus(401);
   // Verify the refresh token and extract the user ID from its payload
-  jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET,
-    async (err, user: { _id: string }) => {
-      console.log(err);
-      if (err) return res.sendStatus(401);
-      try {
-        // Find the user in the database based on the extracted user ID
-        const userDb = await User.findOne({ _id: user._id });
-        // Check if the user has refresh tokens and if the provided token is included
-        if (
-          !userDb.refreshTokens ||
-          !userDb.refreshTokens.includes(refreshToken)
-        ) {
-          // If not, clear all refresh tokens for the user and return unauthorized
-          userDb.refreshTokens = [];
-          await userDb.save();
-          return res.sendStatus(401);
-        } else {
-          // If the provided token is valid, remove it from the user's refresh tokens
-          userDb.refreshTokens = userDb.refreshTokens.filter(
-            (t) => t !== refreshToken
-          );
-          await userDb.save();
-          return res.sendStatus(200);
-        }
-      } catch (err) {
-        res.sendStatus(401).send(err.message);
-      }
-    }
-  );
+  let userId: string | undefined;
+  try {
+    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = payload as { _id: string };
+    userId = user._id;
+  } catch (error) {
+    return res.sendStatus(401);
+  }
+  if (!userId) {
+    return res.sendStatus(401);
+  }
+  // Find the user in the database based on the extracted user ID
+  const userDb = await User.findOne({ _id: userId });
+  // Check if the user has refresh tokens and if the provided token is included
+  if (!userDb.refreshTokens || !userDb.refreshTokens.includes(refreshToken)) {
+    // If not, clear all refresh tokens for the user and return unauthorized
+    userDb.refreshTokens = [];
+    await userDb.save();
+    return res.sendStatus(401);
+  } else {
+    // If the provided token is valid, remove it from the user's refresh tokens
+    userDb.refreshTokens = userDb.refreshTokens.filter(
+      (t) => t !== refreshToken
+    );
+    await userDb.save();
+    return res.sendStatus(200);
+  }
 };
 
 const refreshToken = async (req: Request, res: Response) => {
@@ -149,8 +142,9 @@ const refreshToken = async (req: Request, res: Response) => {
           process.env.JWT_REFRESH_SECRET
         );
         userDb.refreshTokens = userDb.refreshTokens.filter(
-          (t) => t !== refreshToken
+          (token) => token !== refreshToken
         );
+
         userDb.refreshTokens.push(newRefreshToken);
         await userDb.save();
         return res.status(200).send({
