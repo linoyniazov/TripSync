@@ -1,164 +1,92 @@
-import mongoose from "mongoose";
 import request from "supertest";
-import userModel from "../models/user_model";
-import { Express } from "express";
 import initApp from "../server";
+import mongoose from "mongoose";
+import User, { IUser } from "../models/user_model";
+import { Express } from "express";
 
 let app: Express;
-let userId: string;
-
-beforeAll(async () => {
-  console.log("beforeAll");
-  app = await initApp(); 
-  await userModel.deleteMany();
-  const testUser = {
-    email: "testUser@test.com",
-    username: "Test User",
-    password: "testPassword",
-    profileImage: "testPhoto.jpg",
-    bio: "I love testing!",
-  };
-  const createdUser = await userModel.create(testUser);
-  userId = createdUser._id.toString();
-});
-
-afterAll(async () => {
-  await mongoose.connection.close();
-});
-
+let testUserId: string;
+let accessToken: string;
+// Create a test user
+const testUser: IUser = {
+  email: "testUser@test.com",
+  name: "Test User",
+  password: "testPassword",
+  profilePhoto: "testPhoto.jpg",
+  aboutMe: "I love testing!",
+};
 describe("User Controller Tests", () => {
-  test("GET /user/:id - Get User Profile", async () => {
-    const response = await request(app).get(`/user/${userId}`);
-    expect(response.status).toBe(200);
+  beforeAll(async () => {
+    app = await initApp();
 
-    const user = response.body;
-    expect(user).toBeDefined();
-    expect(user.email).toBe("testUser@test.com");
-    expect(user.username).toBe("Test User");
-    expect(user.profileImage).toBe("testPhoto.jpg");
-    expect(user.bio).toBe("I love testing!");
+    const registerResponse = await request(app)
+      .post("/auth/register")
+      .send(testUser);
+    const loginResponse = await request(app).post("/auth/login").send(testUser);
+    accessToken = loginResponse.body.accessToken;
+
+    testUserId = loginResponse.body.userId;
+    console.log(testUserId);
   });
 
-  test("GET /user/:id - Get User Profile (User not found)", async () => {
-    const nonExistentUserId = "123456789012345678901234";
-    const response = await request(app).get(`/user/${nonExistentUserId}`);
+  afterAll(async () => {
+    User.deleteMany({ email: testUser.email });
+    await mongoose.connection.close();
+  });
+  test("should retrieve user profile with valid user ID and authentication token", async () => {
+    const response = await request(app)
+      .get(`/user/${testUserId}`)
+      .set("Authorization", `JWT ${accessToken}`);
+    expect(response.status).toBe(200);
+
+    const userProfile = response.body.userProfile;
+    expect(userProfile).toBeDefined();
+    expect(userProfile.email).toBeDefined();
+    expect(userProfile.Name).toBeDefined();
+  });
+
+  test("should handle case where user ID does not exist during profile retrieval", async () => {
+    const nonExistentUserId = "123456789012345678901234"; // A non-existent user ID
+    const response = await request(app)
+      .get(`/user/${nonExistentUserId}`)
+      .set("Authorization", `JWT ${accessToken}`);
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("User not found");
   });
 
-  test("PATCH /user/:id - Update User Profile", async () => {
+  test("should update user profile with valid user ID and authentication token", async () => {
     const updatedProfile = {
-      username: "Updated Name",
-      profileImage: "updatedPhoto.jpg",
-      bio: "Updated bio!",
+      name: "Updated Name",
+      profilePhoto: "updatedPhoto.jpg",
+      aboutMe: "Updated bio!",
     };
 
     const response = await request(app)
-      .patch(`/user/${userId}`)
+      .patch(`/user/${testUserId}`)
+      .set("Authorization", `JWT ${accessToken}`)
       .send(updatedProfile);
     expect(response.status).toBe(200);
 
     const updatedUser = response.body;
     expect(updatedUser).toBeDefined();
-    expect(updatedUser.username).toBe(updatedProfile.username);
-    expect(updatedUser.profileImage).toBe(updatedProfile.profileImage);
-    expect(updatedUser.bio).toBe(updatedProfile.bio);
+    expect(updatedUser.name).toBe(updatedProfile.name);
+    expect(updatedUser.profilePhoto).toBe(updatedProfile.profilePhoto);
+    expect(updatedUser.aboutMe).toBe(updatedProfile.aboutMe);
   });
 
-  test("PATCH /user/:id - Update User Profile (User not found)", async () => {
-    const nonExistentUserId = "123456789012345678901234";
+  test("should handle case where user ID for updating does not exist", async () => {
+    const nonExistentUserId = "123456789012345678901234"; // A non-existent user ID
     const updatedProfile = {
-      username: "Updated Name",
-      profileImage: "updatedPhoto.jpg",
-      bio: "Updated bio!",
+      name: "Updated Name",
+      profilePhoto: "updatedPhoto.jpg",
+      aboutMe: "Updated bio!",
     };
 
     const response = await request(app)
       .patch(`/user/${nonExistentUserId}`)
+      .set("Authorization", `JWT ${accessToken}`)
       .send(updatedProfile);
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("User not found");
   });
 });
-// import mongoose from "mongoose";
-// import request from "supertest";
-// import userModel from "../models/user_model";
-// import { Express } from "express";
-// import initApp from "../server";
-
-// let app: Express;
-// let userId: string;
-
-// beforeAll(async () => {
-//   console.log("beforeAll");
-//   app = await initApp(); 
-//   await userModel.deleteMany();
-//   const testUser = {
-//     email: "testUser@test.com",
-//     username: "Test User",
-//     password: "testPassword",
-//     profileImage: "testPhoto.jpg",
-//     bio: "I love testing!",
-//   };
-//   const createdUser = await userModel.create(testUser); // Save the user in the database
-//   userId = createdUser._id.toString(); // Save the created user's ID for further tests
-// });
-
-// afterAll(async () => {
-//   await mongoose.connection.close();
-// });
-
-// describe("User Controller Tests", () => {
-//   test("GET /user/:userId - Get User Profile", async () => {
-//     const response = await request(app).get(`/user/${userId}`);
-//     expect(response.status).toBe(200);
-
-//     const userProfile = response.body.userProfile;
-//     expect(userProfile).toBeDefined();
-//     expect(userProfile.email).toBeDefined();
-//     expect(userProfile.username).toBeDefined();
-//     expect(userProfile.profileImage).toBeDefined();
-//     expect(userProfile.bio).toBeDefined();
-//   });
-
-//   test("GET /user/:userId - Get User Profile (User not found)", async () => {
-//     const nonExistentUserId = "123456789012345678901234"; // A non-existent user ID
-//     const response = await request(app).get(`/user/${nonExistentUserId}`);
-//     expect(response.status).toBe(404);
-//     expect(response.body.message).toBe("User not found");
-//   });
-
-//   test("PATCH /user/:userId - Update User Profile", async () => {
-//     const updatedProfile = {
-//       username: "Updated Name",
-//       profileImage: "updatedPhoto.jpg",
-//       bio: "Updated bio!",
-//     };
-
-//     const response = await request(app)
-//       .patch(`/user/${userId}`)
-//       .send(updatedProfile);
-//     expect(response.status).toBe(200);
-
-//     const updatedUser = response.body;
-//     expect(updatedUser).toBeDefined();
-//     expect(updatedUser.username).toBe(updatedProfile.username);
-//     expect(updatedUser.profileImage).toBe(updatedProfile.profileImage);
-//     expect(updatedUser.bio).toBe(updatedProfile.bio);
-//   });
-
-//   test("PATCH /user/:userId - Update User Profile (User not found)", async () => {
-//     const nonExistentUserId = "123456789012345678901234"; // A non-existent user ID
-//     const updatedProfile = {
-//       username: "Updated Name",
-//       profileImage: "updatedPhoto.jpg",
-//       bio: "Updated bio!",
-//     };
-
-//     const response = await request(app)
-//       .patch(`/user/${nonExistentUserId}`)
-//       .send(updatedProfile);
-//     expect(response.status).toBe(404);
-//     expect(response.body.message).toBe("User not found");
-//   });
-// });
