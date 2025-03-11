@@ -7,6 +7,7 @@ import userRoute from "./routes/user_route";
 import postRoute from "./routes/post_route";
 import postInteraction from "./routes/post_interaction_route";
 import fileRoute from "./routes/file_route";
+import authRoute from "./routes/auth_route";
 
 
 const app = express();
@@ -17,6 +18,7 @@ app.use("/post", postRoute);
 app.use("/postInteraction", postInteraction);
 app.use("/file", fileRoute);
 app.use("/public", express.static("public"));
+app.use("/auth", authRoute);
 
 
 const db = mongoose.connection;
