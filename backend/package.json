@@ -6,7 +6,8 @@
     "dev": "nodemon ./src/app.ts",
     "start": "tsc && node ./dist/app.js",
     "test": "tsc && jest --detectOpenHandles --forceExit",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "testFile": "jest --detectOpenHandles --forceExit file.test.ts"
   },
   "keywords": [],
   "author": "",
