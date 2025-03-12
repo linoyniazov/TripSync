@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IPost{
-    title: string;
+    city: string;
     location: string;
     description: string;
     photos: string[]; 
@@ -9,7 +9,7 @@ export interface IPost{
 }
 
 const postSchema = new mongoose.Schema<IPost>({
-    title: {
+    city: {
         type: String,
         required: true,
     },
