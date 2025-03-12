@@ -10,4 +10,3 @@ initApp()
   .catch(() => {
     console.log("Error Fail starting the server");
   });
-
