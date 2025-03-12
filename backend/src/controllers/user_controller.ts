@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import UserModel from "../models/user_model";
-
 // Create a new user
 export const create = async (req: Request, res: Response) => {
   try {
@@ -38,7 +37,6 @@ export const getById = async (req: Request, res: Response) => {
 };
 
 // Update user by ID
-// ... existing code ...
 
 export const update = async (req: Request, res: Response) => {
   try {
@@ -63,10 +61,9 @@ export const update = async (req: Request, res: Response) => {
   }
 };
 
-// ... existing code ...
 
 // Delete user by ID
-export const deleteItem = async (req: Request, res: Response) => {
+export const deleteUser= async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
     const deletedUser = await UserModel.findByIdAndDelete(userId);
@@ -75,6 +72,7 @@ export const deleteItem = async (req: Request, res: Response) => {
     }
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error", error });
   }
 };
@@ -84,5 +82,5 @@ export default {
   getAll,
   getById,
   update,
-  deleteItem
+  deleteUser
 };

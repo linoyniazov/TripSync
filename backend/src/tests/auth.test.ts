@@ -21,25 +21,27 @@ afterAll(async () => {
 type UserInfo = {
   email: string;
   password: string;
+  username: string;
   token?: string;
   _id?: string;
 };
 const userInfo: UserInfo = {
   email: "linoy@gmail.com",
-  password: "123456"
+  password: "123456",
+  username: "linoy"
 }
 
 describe("Auth Tests", () => {
   test("Auth Registration", async () => {
     const response = await request(app).post("/auth/register").send(userInfo);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Auth Registration fail", async () => {
-    const response = await request(app).post("/auth/register").send(userInfo);
-    expect(response.statusCode).not.toBe(200);
+    const response = await request(app).post("/auth/register").send({});
+    expect(response.statusCode).toBe(400); // Expect 400 for missing fields
   });
-
+  
   test("Auth Login", async () => {
     const response = await request(app).post("/auth/login").send(userInfo);
     console.log(response.body);
