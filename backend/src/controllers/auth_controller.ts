@@ -43,6 +43,7 @@
         if (!jwtSecret || !jwtRefreshSecret) {
             throw new Error("Missing JWT configuration");
         }
+        console.log("Generating token with secret:", jwtSecret);
 
         const accessToken = jwt.sign(
             { _id: _id, random: random },
@@ -109,29 +110,31 @@
             res.status(400).send("missing refresh token");
             return;
         }
+            //first validate the refresh token
         if (!process.env.JWT_REFRESH_SECRET) {
             res.status(400).send("missing auth configuration");
             return;
         }
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, async (err: any, data: any) => {
             if (err) {
-                res.status(400).send("invalid token");
+                res.status(403).send("invalid token");
                 return;
             }
             const payload = data as TokenPayload;
             try {
                 const user = await userModel.findOne({ _id: payload._id });
                 if (!user) {
-                    res.status(403).send("invalid token");
+                    res.status(400).send("invalid token");
                     return;
                 }
                 if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
-                    res.status(403).send("invalid token");
-                    // user.refreshTokens = [];
-                    // await user.save();
+                    res.status(400).send("invalid token");
+                    user.refreshTokens = [];
+                    await user.save();
                     return;
                 }
-                user.refreshTokens.filter((token) => token !== refreshToken);
+                const tokens = user.refreshTokens.filter((token) => token !== refreshToken);
+                user.refreshTokens = tokens;
                 await user.save();
                 res.status(200).send("logged out");
             } catch (err) {
@@ -197,6 +200,8 @@
 
     export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
         const authHeader = req.headers['authorization'];
+        console.log("Authorization Header:", authHeader);
+
         const token = authHeader && authHeader.split(' ')[1];
         if (!token) {
             res.status(401).send("missing token");
@@ -208,6 +213,7 @@
         }
         jwt.verify(token, process.env.JWT_SECRET, (err, data) => {
             if (err) {
+                console.error("JWT verification failed:", err);
                 res.status(403).send("invalid token");
                 return;
             }
