@@ -1,28 +1,184 @@
 import express, { Request, Response } from "express";
 const router = express.Router();
 import userController from "../controllers/user_controller";
-import {authMiddleware} from "../controllers/auth_controller";
+import { authMiddleware } from "../controllers/auth_controller";
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API for managing user profiles
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: The email of the user.
+ *         password:
+ *           type: string
+ *           description: The password of the user.
+ *         username:
+ *           type: string
+ *           description: The name of the user.
+ *         profileImage:
+ *           type: string
+ *           description: URL of the user's profile photo.
+ *         bio:
+ *           type: string
+ *           description: A brief description about the user.
+ *       required:
+ *         - email
+ *         - password
+ *         - username
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Users
+ *     description: User management
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Create a new user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user's email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 description: The user's password
+ *                 example: password123
+ *               name:
+ *                 type: string
+ *                 description: The user's name
+ *                 example: John Doe
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Invalid input
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/", authMiddleware, userController.create);
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/", (req: Request, res: Response) => {
-    userController.getAll(req, res);
+  userController.getAll(req, res);
 });
 
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: User data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/:id", (req: Request, res: Response) => {
-    userController.getById(req, res);
+  userController.getById(req, res);
 });
 
-router.patch("/:id", authMiddleware,(req: Request, res: Response) => {
-    userController.update(req, res);
-});
-
-router.put("/:id", authMiddleware, (req: Request, res: Response) => {
-    userController.update(req, res);
-});
-
-router.delete("/:userId", authMiddleware, (req: Request, res: Response) => {
-    userController.deleteUser(req, res);
+/**
+ * @swagger
+ * /users/{id}:
+ *   patch:
+ *     summary: Update user by ID
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user's email
+ *                 example: user@example.com
+ *               name:
+ *                 type: string
+ *                 description: The user's name
+ *                 example: John Doe
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch("/:id", authMiddleware, (req: Request, res: Response) => {
+  userController.update(req, res);
 });
 
 export default router;

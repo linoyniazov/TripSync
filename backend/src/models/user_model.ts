@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
-import { IPost } from "./post_model";
 
 export interface IUser {
   email: string;
@@ -9,8 +8,6 @@ export interface IUser {
   username: string;
   profileImage?: string;
   bio?: string;
-  posts?: Types.Array<IPost>;
-
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -24,8 +21,8 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   refreshTokens: {
     type: [String],
-    default: [],
-  },  
+    required: false,
+  },
   username: {
     type: String,
     required: true,
@@ -36,12 +33,6 @@ const userSchema = new mongoose.Schema<IUser>({
   bio: {
     type: String,
   },
-  posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "post_model",
-    },
-  ],
 });
 
 const UserModel = mongoose.model<IUser>("User", userSchema);
