@@ -1,19 +1,19 @@
-    import { Request, Response, NextFunction } from 'express';
+    import express, {  Request, Response, NextFunction } from 'express';
     import userModel from '../models/user_model';
     import bcrypt from 'bcrypt';
     import jwt from 'jsonwebtoken';
 
 
 
-    const register = async (req: Request, res: Response) => {
-        const email = req.body.email;
-        const password = req.body.password;
-        const name= req.body.username;
-        if (!email || !password || !name) {
-            return res.status(400).send("Missing email, password or name ");
-            return;
-        }
+    const register = async (req: Request, res: Response) : Promise<Response> =>  {
+       
         try {
+             const email = req.body.email;
+            const password = req.body.password;
+            const name= req.body.username;
+                if (!email || !password || !name) {
+                    return res.status(400).send("Missing email, password or name ");
+                    }
             // Check if user already exists
             const existingUser = await userModel.findOne({ email: email });
             if (existingUser) {
@@ -217,4 +217,10 @@
         });
     };
 
-    export default { register, login, logout, refresh ,authMiddleware};
+    export default { 
+    register: register as unknown as express.RequestHandler,
+    login: login as unknown as express.RequestHandler,
+    refresh: refresh as unknown as express.RequestHandler,
+    logout: logout as unknown as express.RequestHandler,
+    generateTokens
+     };

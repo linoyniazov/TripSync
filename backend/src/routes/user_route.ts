@@ -1,8 +1,7 @@
 import express, { Request, Response } from "express";
 const router = express.Router();
 import userController from "../controllers/user_controller";
-import { authMiddleware } from "../controllers/auth_controller";
-
+import {authMiddleware} from "../controllers/auth_controller";
 
 router.post("/", authMiddleware, userController.create);
 
