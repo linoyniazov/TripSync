@@ -6,6 +6,7 @@ import initApp from "../server";
 
 let app: Express;
 let userId: string;
+let validToken: string;
 
 beforeAll(async () => {
   console.log("beforeAll");
@@ -27,8 +28,9 @@ afterAll(async () => {
 });
 
 describe("User Controller Tests", () => {
+  const authHeader = { Authorization: `Bearer ${validToken}` };
   test("GET /user/:id - Get User Profile", async () => {
-    const response = await request(app).get(`/user/${userId}`);
+    const response = await request(app).get(`/user/${userId}`).set(authHeader);
     expect(response.status).toBe(200);
 
     const user = response.body;
@@ -54,8 +56,7 @@ describe("User Controller Tests", () => {
     };
 
     const response = await request(app)
-      .patch(`/user/${userId}`)
-      .send(updatedProfile);
+      .patch(`/user/${userId}`).set(authHeader).send(updatedProfile);
     expect(response.status).toBe(200);
 
     const updatedUser = response.body;
@@ -79,6 +80,35 @@ describe("User Controller Tests", () => {
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("User not found");
   });
+  test("DELETE /user/:id - Delete User Successfully", async () => {
+    const response = await request(app)
+      .delete(`/user/${userId}`).set(authHeader)
+      .expect(200);
+
+    expect(response.body).toEqual({ message: "User deleted successfully" });
+
+    // Verify user is actually deleted
+    const deletedUser = await userModel.findById(userId);
+    expect(deletedUser).toBeNull();
+  });
+
+  test("DELETE /user/:id - Delete User (User not found)", async () => {
+    const nonExistentUserId = "123456789012345678901234";
+    const response = await request(app)
+      .delete(`/user/${nonExistentUserId}`)
+      .expect(404);
+
+    expect(response.body).toEqual({ message: "User not found" });
+  });
+
+  test("DELETE /user/:id - Invalid User ID Format", async () => {
+    const response = await request(app)
+      .delete("/user/invalid-id")
+      .expect(500);
+
+    expect(response.body.message).toBe("Server error");
+  });
+
 });
 // import mongoose from "mongoose";
 // import request from "supertest";
