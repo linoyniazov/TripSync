@@ -43,18 +43,16 @@
         if (!jwtSecret || !jwtRefreshSecret) {
             throw new Error("Missing JWT configuration");
         }
-        console.log("Generating token with secret:", jwtSecret);
-
         const accessToken = jwt.sign(
-            { _id: _id, random: random },
-            jwtSecret,
-            { expiresIn: parseInt(process.env.JWT_EXPIRATION as string) || "1h" }
+            { _id: _id },
+            process.env.JWT_SECRET as string,
+            { expiresIn: process.env.JWT_EXPIRATION || "24h" } as jwt.SignOptions
         );
 
         const refreshToken = jwt.sign(
             { _id: _id, random: random },
             jwtRefreshSecret,
-            { expiresIn: '7d' }
+            { expiresIn: '7d' } as jwt.SignOptions
         );
 
         return { accessToken, refreshToken };
@@ -219,6 +217,7 @@
             }
             const payload = data as TokenPayload;
             req.query.user= payload._id;
+            console.log("Extracted User ID:", req.query.user);
             next();
         });
     };
