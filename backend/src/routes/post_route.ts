@@ -195,28 +195,29 @@ router.patch("/:id", authMiddleware, (req: Request, res: Response) => {
 });
 
 /**
- * @swagger
- * /post/{id}:
- *   delete:
- *     summary: Delete a post by ID
- *     tags: [Posts]
- *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID of the post
- *     responses:
- *       204:
- *         description: Post deleted successfully
- *       404:
- *         description: Post not found
- *       500:
- *         description: Internal server error
- */
+* @swagger
+* /post/{id}:
+*   delete:
+*     summary: Delete a post
+*     description: Delete a post by its ID
+*     security:
+*       - bearerAuth: []
+*     tags: [Posts]
+*     parameters:
+*       - in: path
+*         name: id
+*         schema:
+*           type: string
+*         required: true
+*         description: The ID of the post to delete
+*     responses:
+*       200:
+*         description: Post deleted successfully
+*       404:
+*         description: Post not found
+*       500:
+*         description: Internal server error
+*/
 
 router.delete("/:id", authMiddleware, (req: Request, res: Response) => {
   postController.deleteById(req, res);

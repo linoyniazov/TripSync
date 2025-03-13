@@ -77,20 +77,29 @@ class postController {
     }
 
     async deleteById(req: Request, res: Response) {
-        console.log("deleteOrderById:" + req.body);
+        console.log("deletePostById:", req.params.id);
         const postId = req.params.id;
+        const userId = req.query.user; // ה-ID מהטוקן
+        console.log("User ID from token:", userId);
+    
         try {
-            const deletedPost = await Post.findByIdAndDelete(postId);
-            if (!deletedPost) {
-                res.status(404).json({ error: 'Post not found' });
+            const post = await Post.findById(postId);
+            if (!post) {
+                return res.status(404).json({ error: "Post not found" });
             }
-            res.status(200).send({ message: 'Post deleted successfully' });
+    
+            // 🔹 רק הבעלים של הפוסט יכול למחוק אותו
+            if (post.userId.toString() !== userId) {
+                return res.status(403).json({ error: "Unauthorized to delete this post" });
+            }
+    
+            await Post.findByIdAndDelete(postId);
+            res.status(200).json({ message: "Post deleted successfully" });
         } catch (error) {
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(500).json({ error: "Internal Server Error" });
         }
     }
-
-}
+}    
 
 export default new postController();
 // import Post, {IPost} from "../models/post_model";
