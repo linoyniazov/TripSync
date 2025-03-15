@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Post, { IPost } from './Post';
-import { apiClient } from '../utils/apiClient';
+import apiClient  from '../services/axiosInstance';
 import { RiEditLine, RiDeleteBinLine } from 'react-icons/ri';
 import { Button, Modal } from 'react-bootstrap';
 import EditPostModal from './EditPostModal';

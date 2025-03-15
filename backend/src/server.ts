@@ -20,6 +20,8 @@ app.use("/post", postRoute);
 app.use("/postInteraction", postInteraction);
 app.use("/file", fileRoute);
 app.use("/public", express.static("public"));
+app.use("/storage", express.static("storage"));
+
 app.use("/auth", authRoute);
 
 const options = {

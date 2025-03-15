@@ -1,6 +1,6 @@
 import { ChangeEvent, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { apiClient } from '../utils/apiClient';
+import apiClient  from '../services/axiosInstance';
 
 interface IPost {
   _id: string;
