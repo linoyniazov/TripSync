@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Container, Row, Col, Carousel } from "react-bootstrap";
-import { apiClient } from "../utils/apiClient";
+import apiClient  from '../services/axiosInstance';
 
 export interface IPost {
   _id: string;

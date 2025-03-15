@@ -9,7 +9,7 @@ const Footer = () => {
           TripSync
         </div>
         <div className="footer-text">
-          © 2024 TripSync. Connect. Share. Explore.
+          © 2025 TripSync. Connect. Share. Explore.
         </div>
       </Container>
     </footer>
