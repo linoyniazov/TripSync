@@ -1,25 +1,30 @@
-import apiClient from "./api-client";
+import apiClient from "./axiosInstance";
 
 interface IUpoloadResponse {
-    url: string;
+  url: string;
 }
-export const uploadPhoto = async (photo: File) => {
-    return new Promise<string>((resolve, reject) => {
-        console.log("Uploading photo..." + photo)
-        const formData = new FormData();
-        if (photo) {
-            formData.append("file", photo);
-            apiClient.post<IUpoloadResponse>('file?file=123.jpeg', formData, {
-                headers: {
-                    'Content-Type': 'image/jpeg'
-                }
-            }).then(res => {
-                console.log(res);
-                resolve(res.data.url);
-            }).catch(err => {
-                console.log(err);
-                reject(err);
-            });
-        }
-    });
-}
+export const uploadImage = async (image: File) => {
+  return new Promise<string>((resolve, reject) => {
+    console.log("Uploading image..." + image);
+    const formData = new FormData();
+    if (image) {
+      formData.append("file", image);
+      apiClient
+        .post<IUpoloadResponse>("file?file=123.jpeg", formData, {
+          headers: {
+            "Content-Type": "image/jpeg",
+          },
+        })
+        .then((res) => {
+          console.log(res);
+          resolve(res.data.url);
+          // const url = res.data.url;
+          // setProfileImage(url);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(err);
+        });
+    }
+  });
+};

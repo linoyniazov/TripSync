@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Post, { IPost } from './Post';
-import { apiClient } from '../utils/apiClient';
+import apiClient  from '../services/axiosInstance';
 
 const PostsList = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
