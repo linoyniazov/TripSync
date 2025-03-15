@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import { Container, Form, Button } from "react-bootstrap";
-import { apiClient } from "../utils/apiClient";
+import apiClient  from '../services/axiosInstance';
 import { FaCamera } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 

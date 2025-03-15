@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Button, Modal, Form } from 'react-bootstrap';
-import { apiClient } from '../utils/apiClient';
+import apiClient  from '../services/axiosInstance';
 import { RiEditLine } from 'react-icons/ri';
 
 interface AboutMeProps {
