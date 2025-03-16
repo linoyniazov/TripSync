@@ -3,3 +3,4 @@ dist/
 .env
 backend/public/*
 !backend/public/.gitkeep
+.vscode/
