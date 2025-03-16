@@ -63,19 +63,25 @@ describe("Auth Tests", () => {
       email: userInfo.email,
       password: userInfo.password
     });
-    expect(response.body.accessToken).not.toEqual(userInfo.accessToken);
+    // expect(response.body.accessToken).not.toEqual(userInfo.accessToken);
+    const accessToken = response.body.accessToken;
+    const refreshToken = response.body.refreshToken;
+
+    expect(accessToken).not.toBe(userInfo.accessToken);
+    expect(refreshToken).not.toBe(userInfo.refreshToken);
   });
 
 
   test("Get protected API", async () => {
-    const response = await request(app).post("/posts").send({
+    const response = await request(app).post("/post").send({
       userId: "invalid owner",
       title: "My First post",
       description: "This is my first post",
     });
     expect(response.statusCode).not.toBe(201);
-    const response2 = await request(app).post("/posts").set({
-      authorization: 'jwt ' + userInfo.accessToken+'1'
+
+    const response2 = await request(app).post("/post").set({
+      authorization: 'JWT' + userInfo.accessToken +"1"
     }).send({
       userId: "invalid owner",
       title: "My First post",
@@ -85,8 +91,8 @@ describe("Auth Tests", () => {
   });
 
   test("Get protected API invalid token", async () => {
-    const response = await request(app).post("/posts").set({
-      authorization: 'jwt ' + userInfo.accessToken + '1'
+    const response = await request(app).post("/post").set({
+      authorization: 'JWT' + userInfo.accessToken+"1"
     }).send({
       userId: userInfo._id,
       title: "My First post",
@@ -166,12 +172,12 @@ describe("Auth Tests", () => {
     await new Promise(resolve => setTimeout(resolve, 6000));
 
     //try to access with expired token
-    const response2 = await request(app).post("/posts").set({
-      authorization: 'jwt ' + userInfo.accessToken
+    const response2 = await request(app).post("/post").set({
+      authorization: 'JWT ' + userInfo.accessToken
     }).send({
-      owner: "invalid owner",
+      userId: "invalid owner",
       title: "My First post",
-      content: "This is my first post",
+      descriptio: "This is my first post",
     });
     expect(response2.statusCode).not.toBe(201);
 
@@ -182,12 +188,12 @@ describe("Auth Tests", () => {
     userInfo.accessToken = response3.body.accessToken;
     userInfo.refreshToken = response3.body.refreshToken;
 
-    const response4 = await request(app).post("/posts").set({
+    const response4 = await request(app).post("/post").set({
       authorization: 'jwt ' + userInfo.accessToken
     }).send({
-      owner: "invalid owner",
+      userId: "invalid owner",
       title: "My First post",
-      content: "This is my first post",
+      description: "This is my first post",
     });
     expect(response4.statusCode).toBe(201);
   });
