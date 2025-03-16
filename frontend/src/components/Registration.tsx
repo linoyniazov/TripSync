@@ -2,9 +2,13 @@ import { ChangeEvent, useRef, useState } from "react";
 import avatar from "../assets/avatar.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
-import {uploadImage} from "../services/file-service";
+import { uploadImage } from "../services/file-service";
+import { registerUser, IUser } from "../services/user-service";
+
+
 function Registration() {
   const [profileImage, setProfileImage] = useState<File>();
+  const usernameInputRef = useRef<HTMLInputElement>(null); // Add this line
   const emailInputeRef = useRef<HTMLInputElement>(null);
   const passwordInputeRef = useRef<HTMLInputElement>(null);
   const fileInputeRef = useRef<HTMLInputElement>(null);
@@ -19,34 +23,22 @@ function Registration() {
     fileInputeRef.current?.click();
   };
 
-  // const uploadImage = (image: File) => {
-  //   console.log("Uploading image..." + image);
-  //   const formData = new FormData();
-  //   if (image) {
-  //     formData.append("file", image);
-  //     apiClient
-  //       .post("file?file=123.jpeg", formData, {
-  //         headers: {
-  //           "Content-Type": "image/jpeg",
-  //         },
-  //       })
-  //       .then((res) => {
-  //         console.log(res);
-  //         // const url = res.data.url;
-  //         // setProfileImage(url);
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //       });
-  //   }
-  // };
-
   const register = async () => {
-    console.log("Registering...");
-    console.log("Email:", emailInputeRef.current?.value);
-    console.log("Password:", passwordInputeRef.current?.value);
-    const url=await uploadImage(profileImage!);
+    // console.log("Registering...");
+    // console.log("Username:", usernameInputRef.current?.value); // Add this line
+    // console.log("Email:", emailInputeRef.current?.value);
+    // console.log("Password:", passwordInputeRef.current?.value);
+    const url = await uploadImage(profileImage!);
     console.log("Profile Image URL:", url);
+    const user: IUser = {
+      username: usernameInputRef.current?.value!,
+      email: emailInputeRef.current?.value!,
+      password: passwordInputeRef.current?.value!,
+      profileImage: url,
+    };
+
+    const res= await registerUser(user);
+    console.log(res);
   };
 
   return (
@@ -73,6 +65,16 @@ function Registration() {
         type="file"
         onChange={imgSelected}
       ></input>
+      <div className="form-floating">
+        <input
+          ref={usernameInputRef} // Add this line
+          type="text"
+          className="form-control"
+          id="floatingUsername"
+          placeholder=""
+        />
+        <label htmlFor="floatingUsername">Username</label> {/* Add this line */}
+      </div>
       <div className="form-floating">
         <input
           ref={emailInputeRef}

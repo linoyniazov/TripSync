@@ -487,10 +487,12 @@ import jwt from 'jsonwebtoken';
 const register = async (req: Request, res: Response) : Promise<Response> =>  {
    
     try {
+        const username= req.body.username;
          const email = req.body.email;
         const password = req.body.password;
-        const name= req.body.username;
-            if (!email || !password || !name) {
+        const profileImage = req.body.profileImage;
+        
+            if (!username || !email || !password) {
                 return res.status(400).send("Missing email, password or name ");
                 }
         // Check if user already exists
@@ -502,9 +504,10 @@ const register = async (req: Request, res: Response) : Promise<Response> =>  {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = await userModel.create({
+            username: username,
             email: email,
             password: hashedPassword,
-            username: name,
+            profileImage: profileImage
             // refreshTokens: [] // Initialize refreshTokens array
         });
         return res.status(200).json(user);

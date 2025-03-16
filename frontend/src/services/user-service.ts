@@ -1,22 +1,27 @@
-import apiClient from "./api-client"
+import apiClient from "./axiosInstance"
 
 export interface IUser {
     email: string,
     password: string,
-    imgUrl: string,
+    username: string,
+    profileImage: string,
     _id?: string,
 }
-
-export const registrUser = (user: IUser) => {
+export const registerUser = (user: IUser) => {
     return new Promise<IUser>((resolve, reject) => {
-        console.log("Registering user...")
-        console.log(user)
-        apiClient.post("/auth/register", user).then((response) => {
-            console.log(response)
-            resolve(response.data)
-        }).catch((error) => {
-            console.log(error)
-            reject(error)
-        })
+
+
+    console.log("User registered successfully!");
+    console.log(user);
+    apiClient
+      .post("/auth/register", user)
+      .then((response) => {
+        console.log(response);
+        resolve(response.data);
+      })
+      .catch((error) => {
+        console.error("Error registering user:", error);
+        reject(error);
+      });
     })
-}
+  };
