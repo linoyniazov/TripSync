@@ -8,8 +8,9 @@
     "start": "tsc && node ./dist/app.js",
     "test": "tsc && jest --detectOpenHandles --forceExit --runInBand",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit auth.test.ts",
-    "testPost": "tsc && jest --detectOpenHandles --forceExit posts.test.ts",
+    "testPost": "tsc && jest --detectOpenHandles --forceExit post.test.ts",
     "testUser": "tsc &&  jest --detectOpenHandles --forceExit user.test.ts",
+    "testPostInteraction": "tsc && jest --detectOpenHandles --forceExit post_interaction.test.ts",
     "testFile": "jest --detectOpenHandles --forceExit file.test.ts",
     "lint": "eslint . --ext .ts"
   },

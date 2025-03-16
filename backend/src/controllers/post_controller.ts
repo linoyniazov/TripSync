@@ -1,107 +1,3 @@
-import Post, {IPost} from "../models/post_model";
-import { Request, Response } from 'express';
-
-class postController {
-
-    async getAll(req: Request, res: Response) {
-        console.log("getAllPosts");
-        try {
-            const posts = await Post.find();
-            res.send(posts);
-        } catch (error) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    }
-
-    async getById(req: Request, res: Response) {
-        console.log("getPostById:" + req.params.id);
-        const postId = req.params.id;
-        try {
-            const post = await Post.findById(postId);
-            if (!post) {
-                res.status(404).json({ error: 'Post not found' });
-            }
-            res.send(post);
-        } catch (error) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    }
-
-    async create(req: Request, res: Response) {
-        console.log("createPost:", req.body);
-
-        try {
-            // שליפת userId מתוך ה- JWT (אחרי שה- `authMiddleware` שמר אותו ב- `req.query.user`)
-            const userId = req.query.user;
-            if (!userId) {
-                return res.status(401).json({ message: "Unauthorized: Invalid token" });
-            }
-
-            // שליפת הנתונים מהבקשה
-            const { city, location, description, photos } = req.body;
-
-            // בדיקת תקינות הנתונים
-            if (!city || !location || !description || !photos || !Array.isArray(photos)) {
-                return res.status(400).json({ message: "Missing required fields" });
-            }
-
-            // יצירת פוסט חדש
-            const newPost = new Post({
-                city,
-                location,
-                description,
-                photos,
-                userId, // קישור הפוסט למשתמש המחובר
-            });
-
-            await newPost.save();
-            return res.status(201).json(newPost);
-        } catch (error) {
-            console.error("Error creating post:", error);
-            return res.status(500).json({ message: "Internal server error" });
-        }
-    }
-
-    async updateById(req: Request, res: Response) {
-        console.log("updateOrderById:"+ req.body);
-        const postId= req.params.id;
-        try {
-            const updatedPost = await Post.findByIdAndUpdate(postId, req.body, {new: true});
-            if (!updatedPost) {
-                return res.status(404).json({ error: 'Post not found' });
-            }
-            res.send(updatedPost);
-        } catch (error) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    }
-
-    async deleteById(req: Request, res: Response) {
-        console.log("deletePostById:", req.params.id);
-        const postId = req.params.id;
-        const userId = req.query.user; // ה-ID מהטוקן
-        console.log("User ID from token:", userId);
-    
-        try {
-            const post = await Post.findById(postId);
-            if (!post) {
-                return res.status(404).json({ error: "Post not found" });
-            }
-    
-            // 🔹 רק הבעלים של הפוסט יכול למחוק אותו
-            if (post.userId.toString() !== userId) {
-                return res.status(403).json({ error: "Unauthorized to delete this post" });
-            }
-    
-            await Post.findByIdAndDelete(postId);
-            res.status(200).json({ message: "Post deleted successfully" });
-        } catch (error) {
-            res.status(500).json({ error: "Internal Server Error" });
-        }
-    }
-}    
-
-export default new postController();
 // import Post, {IPost} from "../models/post_model";
 // import { Request, Response } from 'express';
 
@@ -132,21 +28,37 @@ export default new postController();
 //     }
 
 //     async create(req: Request, res: Response) {
-//         console.log("createPost:" + req.body);    
+//         console.log("createPost:", req.body);
+
 //         try {
-//             // const createdPost = await Post.create(req.body);
-//             const { title, location, description, photos, userId } = req.body;
-//             const newpPost = new Post({
-//                 title,
+//             // שליפת userId מתוך ה- JWT (אחרי שה- `authMiddleware` שמר אותו ב- `req.query.user`)
+//             const userId = req.query.user;
+//             if (!userId) {
+//                 return res.status(401).json({ message: "Unauthorized: Invalid token" });
+//             }
+
+//             // שליפת הנתונים מהבקשה
+//             const { city, location, description, photos } = req.body;
+
+//             // בדיקת תקינות הנתונים
+//             if (!city || !location || !description || !photos || !Array.isArray(photos)) {
+//                 return res.status(400).json({ message: "Missing required fields" });
+//             }
+
+//             // יצירת פוסט חדש
+//             const newPost = new Post({
+//                 city,
 //                 location,
 //                 description,
 //                 photos,
-//                 userId
+//                 userId, // קישור הפוסט למשתמש המחובר
 //             });
-//             await newpPost.save();
-//             res.status(201).json(newpPost);
+
+//             await newPost.save();
+//             return res.status(201).json(newPost);
 //         } catch (error) {
-//             res.status(500).json({ error: 'Internal Server Error' });
+//             console.error("Error creating post:", error);
+//             return res.status(500).json({ message: "Internal server error" });
 //         }
 //     }
 
@@ -165,19 +77,226 @@ export default new postController();
 //     }
 
 //     async deleteById(req: Request, res: Response) {
-//         console.log("deleteOrderById:" + req.body);
+//         console.log("deletePostById:", req.params.id);
 //         const postId = req.params.id;
+//         const userId = req.query.user; // ה-ID מהטוקן
+//         console.log("User ID from token:", userId);
+    
 //         try {
-//             const deletedPost = await Post.findByIdAndDelete(postId);
-//             if (!deletedPost) {
-//                 res.status(404).json({ error: 'Post not found' });
+//             const post = await Post.findById(postId);
+//             if (!post) {
+//                 return res.status(404).json({ error: "Post not found" });
 //             }
-//             res.status(200).send({ message: 'Post deleted successfully' });
+    
+//             // 🔹 רק הבעלים של הפוסט יכול למחוק אותו
+//             if (post.userId.toString() !== userId) {
+//                 return res.status(403).json({ error: "Unauthorized to delete this post" });
+//             }
+    
+//             await Post.findByIdAndDelete(postId);
+//             res.status(200).json({ message: "Post deleted successfully" });
 //         } catch (error) {
-//             res.status(500).json({ error: 'Internal Server Error' });
+//             res.status(500).json({ error: "Internal Server Error" });
 //         }
 //     }
-
-// }
+// }    
 
 // export default new postController();
+// // import Post, {IPost} from "../models/post_model";
+// // import { Request, Response } from 'express';
+
+// // class postController {
+
+// //     async getAll(req: Request, res: Response) {
+// //         console.log("getAllPosts");
+// //         try {
+// //             const posts = await Post.find();
+// //             res.send(posts);
+// //         } catch (error) {
+// //             res.status(500).json({ error: 'Internal Server Error' });
+// //         }
+// //     }
+
+// //     async getById(req: Request, res: Response) {
+// //         console.log("getPostById:" + req.params.id);
+// //         const postId = req.params.id;
+// //         try {
+// //             const post = await Post.findById(postId);
+// //             if (!post) {
+// //                 res.status(404).json({ error: 'Post not found' });
+// //             }
+// //             res.send(post);
+// //         } catch (error) {
+// //             res.status(500).json({ error: 'Internal Server Error' });
+// //         }
+// //     }
+
+// //     async create(req: Request, res: Response) {
+// //         console.log("createPost:" + req.body);    
+// //         try {
+// //             // const createdPost = await Post.create(req.body);
+// //             const { title, location, description, photos, userId } = req.body;
+// //             const newpPost = new Post({
+// //                 title,
+// //                 location,
+// //                 description,
+// //                 photos,
+// //                 userId
+// //             });
+// //             await newpPost.save();
+// //             res.status(201).json(newpPost);
+// //         } catch (error) {
+// //             res.status(500).json({ error: 'Internal Server Error' });
+// //         }
+// //     }
+
+// //     async updateById(req: Request, res: Response) {
+// //         console.log("updateOrderById:"+ req.body);
+// //         const postId= req.params.id;
+// //         try {
+// //             const updatedPost = await Post.findByIdAndUpdate(postId, req.body, {new: true});
+// //             if (!updatedPost) {
+// //                 return res.status(404).json({ error: 'Post not found' });
+// //             }
+// //             res.send(updatedPost);
+// //         } catch (error) {
+// //             res.status(500).json({ error: 'Internal Server Error' });
+// //         }
+// //     }
+
+// //     async deleteById(req: Request, res: Response) {
+// //         console.log("deleteOrderById:" + req.body);
+// //         const postId = req.params.id;
+// //         try {
+// //             const deletedPost = await Post.findByIdAndDelete(postId);
+// //             if (!deletedPost) {
+// //                 res.status(404).json({ error: 'Post not found' });
+// //             }
+// //             res.status(200).send({ message: 'Post deleted successfully' });
+// //         } catch (error) {
+// //             res.status(500).json({ error: 'Internal Server Error' });
+// //         }
+// //     }
+
+// // }
+
+// // export default new postController();
+
+import Post, { IPost } from "../models/post_model";
+import { Request, Response } from "express";
+import mongoose from "mongoose";
+
+class postController {
+    async getAll(req: Request, res: Response) {
+        console.log("getAllPosts");
+        try {
+            const posts = await Post.find();
+            res.status(200).json(posts);
+        } catch (error) {
+            console.error("Error in getAllPosts:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+    async getById(req: Request, res: Response) {
+        console.log("getPostById:", req.params.id);
+        const postId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ error: "Invalid Post ID" });
+        }
+
+        try {
+            const post = await Post.findById(postId);
+            if (!post) {
+                return res.status(404).json({ error: "Post not found" });
+            }
+            return res.status(200).json(post);
+        } catch (error) {
+            console.error("Error in getById:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+    async create(req: Request, res: Response) {
+        console.log("createPost:", req.body);
+
+        try {
+            const userId = (req as any).user?.id;
+            if (!userId) {
+                return res.status(401).json({ message: "Unauthorized: Invalid token" });
+            }
+
+            const { city, location, description, photos } = req.body;
+
+            if (!city || !location || !description || !Array.isArray(photos) || photos.length === 0) {
+                return res.status(400).json({ message: "Missing required fields" });
+            }
+
+            const newPost = new Post({
+                city,
+                location,
+                description,
+                photos,
+                userId,
+            });
+
+            await newPost.save();
+            return res.status(201).json(newPost);
+        } catch (error) {
+            console.error("Error creating post:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+
+    async updateById(req: Request, res: Response) {
+        console.log("updatePostById:", req.body);
+        const postId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ error: "Invalid Post ID" });
+        }
+
+        try {
+            const updatedPost = await Post.findByIdAndUpdate(postId, req.body, { new: true });
+            if (!updatedPost) {
+                return res.status(404).json({ error: "Post not found" });
+            }
+            return res.status(200).json(updatedPost);
+        } catch (error) {
+            console.error("Error updating post:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+    async deleteById(req: Request, res: Response) {
+        console.log("deletePostById:", req.params.id);
+        const postId = req.params.id;
+        const userId = (req as any).user?.id;
+
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ error: "Invalid Post ID" });
+        }
+
+        try {
+            const post = await Post.findById(postId);
+            if (!post) {
+                return res.status(404).json({ error: "Post not found" });
+            }
+
+            if (post.userId.toString() !== userId) {
+                return res.status(403).json({ error: "Unauthorized to delete this post" });
+            }
+
+            await Post.findByIdAndDelete(postId);
+            return res.status(200).json({ message: "Post deleted successfully" });
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+}
+
+export default new postController();

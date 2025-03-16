@@ -15,16 +15,22 @@ class postInteractionController {
     }
   }
 
-  async getByUser(req: Request, res: Response) {
-    console.log("getPostsByUser:" + req.params.userId);
+  async getByUser(req: Request, res: Response): Promise<void> {
     const userId = req.params.userId;
-    try {
-      const postInteractions = await Post.find({ 'userId': userId });
-      res.status(200).send(postInteractions);
-    } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+    console.log(`Fetching posts for user: ${userId}`);
+    if (!userId) {
+        res.status(400).json({ error: 'User ID is required' });
+        return; // Ensure the function exits after sending a response
     }
-  }
+    try {
+        const posts = await Post.find({ userId });
+        console.log(`Posts found: ${JSON.stringify(posts)}`);
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error(`Error fetching posts for user ${userId}:`, error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
   async getByLocation(req: Request, res: Response) {
     console.log("getPostsByLocation:" + req.params.location);
@@ -61,11 +67,7 @@ class postInteractionController {
         postInteraction = new PostInteraction({ postId, comments: [] });
       }
   
-      if (!postInteraction.comments) {
-        postInteraction.comments = [];
-      }
-  
-      postInteraction.comments.push({ userId, comment });
+      postInteraction.comments?.push({ userId, comment });
   
       await postInteraction.save();
   
