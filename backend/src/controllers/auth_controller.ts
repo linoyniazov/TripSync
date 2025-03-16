@@ -510,10 +510,22 @@ const register = async (req: Request, res: Response) : Promise<Response> =>  {
             profileImage: profileImage
             // refreshTokens: [] // Initialize refreshTokens array
         });
-        return res.status(200).json(user);
+         // ✅ יצירת טוקנים
+         const tokens = generateTokens(user._id);
+         if (!tokens) {
+             return res.status(500).send("Failed to generate tokens");
+         }
+         return res.status(200).json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            profileImage: user.profileImage,
+            // accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken
+        });
     } catch (err) {
-    console.error(err);
-    return res.status(500).send("Error registering user");
+        console.error(err);
+        return res.status(500).send("Error registering user");
     }
 };
 
