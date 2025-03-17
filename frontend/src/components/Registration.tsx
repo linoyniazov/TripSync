@@ -50,6 +50,9 @@ function Registration() {
     try {
       const res = await googleSignin(credentialResponse);
       console.log(res);
+      if (res.accessToken) {
+        window.location.href = "/home"; // אפשר להשתמש גם ב- useNavigate אם את עם React Router
+      }
     } catch (error) {
       console.log(error);
     }
