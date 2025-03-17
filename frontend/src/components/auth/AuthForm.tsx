@@ -6,6 +6,8 @@ import { uploadImage } from "../../services/file-service";
 import { registerUser, loginUser, googleSignin, IUser } from "../../services/user-service";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
+import "./AuthForm.css";
+
 
 function AuthForm() {
   const [isLoginForm, setIsLoginForm] = useState(true); // מצב: התחברות או הרשמה
@@ -151,3 +153,5 @@ function AuthForm() {
 }
 
 export default AuthForm;
+
+
