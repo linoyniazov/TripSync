@@ -61,26 +61,26 @@ const NavBar = () => {
               aria-label="Search"
             />
           </Form>
+<Nav className="ms-auto">
+  <Nav.Link as={Link} to="/home">Home</Nav.Link>
+  <Nav.Link as={Link} to="/profile">My Profile</Nav.Link>
+  <Nav.Link as={Link} to="/travel-ai">Travel AI</Nav.Link>
 
-          <Nav className="ms-auto">
-            <Nav.Link as={Link} to="/home">Home</Nav.Link>
-            <Nav.Link as={Link} to="/profile">My Profile</Nav.Link>
-            <Nav.Link disabled title="Coming Soon">Travel AI</Nav.Link>
+  {isAuthenticated ? (
+    <Nav.Link
+      as="button"
+      onClick={handleLogout}
+      className="btn btn-outline-danger ms-3"
+    >
+      Log Out
+    </Nav.Link>
+  ) : (
+    <Nav.Link as={Link} to="/auth" className="btn btn-primary ms-3">
+      Log In
+    </Nav.Link>
+  )}
+</Nav>
 
-            {isAuthenticated ? (
-              <Nav.Link
-                as="button"
-                onClick={handleLogout}
-                className="btn btn-outline-danger ms-3"
-              >
-                Log Out
-              </Nav.Link>
-            ) : (
-              <Nav.Link as={Link} to="/auth" className="btn btn-primary ms-3">
-                Log In
-              </Nav.Link>
-            )}
-          </Nav>
         </Navbar.Collapse>
       </Container>
     </Navbar>

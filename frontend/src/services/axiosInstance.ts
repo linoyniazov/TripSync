@@ -3,9 +3,8 @@ import axios, { CanceledError } from "axios";
 export { CanceledError };
 
 const apiClient = axios.create({
-    baseURL: "", 
+    baseURL: "http://localhost:5000", 
 });
-
 
 apiClient.interceptors.request.use(
     (config) => {
