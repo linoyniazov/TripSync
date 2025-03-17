@@ -6,6 +6,7 @@ import UploadPost from './pages/UploadPost';
 
 
 import Registration from "./components/Registration"; // הוספנו את הקומפוננטה של הרישום
+import Login from './components/Login';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -19,6 +20,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/uploadPost" element={<UploadPost />} />
           <Route path="/register" element={<Registration />} /> {/* הוספנו את עמוד הרישום */}
+          <Route path="/login" element={<Login />} />
 
         </Route>
       </Routes>
