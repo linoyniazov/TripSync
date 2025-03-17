@@ -43,7 +43,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const profileImage = req.body.profileImage;
+    const profileImage = req.body.profileImage || "https://example.com/default-avatar.jpg";
 
     if (!username || !email || !password) {
       return res.status(400).send("Missing email, password or name ");
@@ -53,6 +53,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     if (existingUser) {
       return res.status(406).send("Email already exists");
     }
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
