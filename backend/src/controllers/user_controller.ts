@@ -30,7 +30,15 @@ export const getById = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(user);
+    const DEFAULT_AVATAR = "http://localhost:5000/public/avatar.jpeg";
+    res.status(200).json({
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage && user.profileImage !== "null" && user.profileImage !== "" 
+        ? user.profileImage 
+        : DEFAULT_AVATAR,
+      bio: user.bio || "I'm a passionate traveler!",
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -51,20 +59,49 @@ export const getById = async (req: Request, res: Response) => {
 
 // Update user by ID
 
+// export const update = async (req: Request, res: Response) => {
+//   try {
+//     const userId = req.params.id;
+//     const { username, profileImage, bio } = req.body;
+
+//     // Check if the user exists first
+//     const existingUser = await UserModel.findById(userId);
+//     if (!existingUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const updatedUser = await UserModel.findByIdAndUpdate(
+//       userId,
+//       { username, profileImage, bio },
+//       { new: true, runValidators: true }
+//     ).select("-password -refreshToken");
+
+//     res.status(200).json(updatedUser);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
 export const update = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
     const { username, profileImage, bio } = req.body;
 
-    // Check if the user exists first
     const existingUser = await UserModel.findById(userId);
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const DEFAULT_AVATAR = "http://localhost:5000/public/avatar.jpeg";
+
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      { username, profileImage, bio },
+      {
+        username,
+        profileImage: profileImage && profileImage !== "null" && profileImage !== "" 
+          ? profileImage 
+          : existingUser.profileImage || DEFAULT_AVATAR,
+        bio,
+      },
       { new: true, runValidators: true }
     ).select("-password -refreshToken");
 
@@ -73,6 +110,7 @@ export const update = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 
 // Delete user by ID
