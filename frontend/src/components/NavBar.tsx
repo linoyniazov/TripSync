@@ -24,7 +24,7 @@ const NavBar = () => {
           <Nav className="ms-auto">
             <Nav.Link as={Link} to="/">Home</Nav.Link>
             <Nav.Link as={Link} to="/profile">My Profile</Nav.Link>
-            <Nav.Link disabled title="Coming Soon">Travel AI</Nav.Link>
+            <Nav.Link as={Link} to="/travel-ai">Travel AI</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

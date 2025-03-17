@@ -10,7 +10,7 @@ import fileRoute from "./routes/file_route";
 import authRoute from "./routes/auth_route";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
-
+import aiRoute from "./routes/ai_route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +21,7 @@ app.use("/postInteraction", postInteraction);
 app.use("/file", fileRoute);
 app.use("/public", express.static("public"));
 app.use("/storage", express.static("storage"));
+app.use("/ai", aiRoute);
 
 app.use("/auth", authRoute);
 
