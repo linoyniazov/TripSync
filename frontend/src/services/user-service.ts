@@ -22,10 +22,12 @@ export const registerUser = (user: IUser) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
+        localStorage.setItem("userId", response.data._id);  // ✅ שמירת ה- userId
+
         resolve(response.data);
       })
       .catch((error) => {
-        console.error("Error registering user:", error);
+        console.error(error);
         reject(error);
       });
   });
@@ -44,6 +46,7 @@ export const loginUser = (user: IUser) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
+        localStorage.setItem("userId", response.data._id);  // ✅ שמירת ה- userId
         resolve(response.data);
       })
       .catch((error) => {
@@ -63,6 +66,7 @@ export const googleSignin = (credentialResponse: CredentialResponse) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
+        localStorage.setItem("userId", response.data._id);  
         resolve(response.data);
       })
       .catch((error) => {

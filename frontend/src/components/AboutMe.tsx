@@ -9,18 +9,18 @@ interface AboutMeProps {
 }
 
 interface UserProfile {
-  Name: string;
+  username: string;
   email: string;
-  profilePhoto: string;
-  aboutMe: string;
+  profileImage: string;
+  bio: string;
 }
 
 const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
   const defaultUserProfile = {
-    Name: "",
+    username: "",
     email: "",
-    profilePhoto: "avatar.jpeg",
-    aboutMe: "I'm a passionate traveler!",
+    profileImage: "avatar.jpeg",
+    bio: "I'm a passionate traveler!",
   };
 
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
@@ -32,28 +32,56 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
     fetchUserProfile(userId);
   }, [userId]);
 
+  // const fetchUserProfile = async (userId: string) => {
+  //   try {
+  //     const response = await apiClient.get(`/user/${userId}`);
+  //     if (response.status === 200) {
+  //       const { username, email, profileImage, bio } = response.data.userProfile;
+  //       const updatedProfile = {
+  //         username: username || defaultUserProfile.username,
+  //         email: email || defaultUserProfile.email,
+  //         profileImage: profileImage || defaultUserProfile.profileImage,
+  //         bio: bio || defaultUserProfile.bio,
+  //       };
+  //       setUserProfile(updatedProfile);
+  //       setTempUserProfile(updatedProfile);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+  
   const fetchUserProfile = async (userId: string) => {
+    if (!userId) {
+      console.error("❌ userId is missing! (check localStorage)");
+      return;
+    }
+  
     try {
       const response = await apiClient.get(`/user/${userId}`);
-      if (response.status === 200) {
-        const { Name, email, profilePhoto, aboutMe } = response.data.userProfile;
-        const updatedProfile = {
-          Name: Name || defaultUserProfile.Name,
-          email: email || defaultUserProfile.email,
-          profilePhoto: profilePhoto || defaultUserProfile.profilePhoto,
-          aboutMe: aboutMe || defaultUserProfile.aboutMe,
-        };
-        setUserProfile(updatedProfile);
-        setTempUserProfile(updatedProfile);
+      console.log("✅ Server Response:", response.data);
+  
+      if (!response.data || !response.data.username) {
+        console.error("❌ Invalid response format:", response.data);
+        return;
       }
+  
+      setUserProfile({
+        username: response.data.username || defaultUserProfile.username,
+        email: response.data.email || defaultUserProfile.email,
+        profileImage: response.data.profileImage || defaultUserProfile.profileImage,
+        bio: response.data.bio || defaultUserProfile.bio,
+      });
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error("❌ Error fetching user profile:", error);
     }
   };
+  
+  
 
   const handleSubmit = async () => {
     try {
-      let photoUrl = userProfile.profilePhoto;
+      let photoUrl = userProfile.profileImage;
 
       if (selectedFile) {
         const formData = new FormData();
@@ -67,13 +95,13 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
       }
 
       const response = await apiClient.patch(`/user/${userId}`, {
-        name: tempUserProfile.Name,
-        profilePhoto: photoUrl,
-        aboutMe: tempUserProfile.aboutMe,
+        username: tempUserProfile.username,
+        profileImage: photoUrl,
+        bio: tempUserProfile.bio,
       });
 
       if (response.status === 200) {
-        setUserProfile({ ...tempUserProfile, profilePhoto: photoUrl });
+        setUserProfile({ ...tempUserProfile, profileImage: photoUrl });
         setShowEditModal(false);
         refreshProfile();
       }
@@ -102,7 +130,7 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
         <div className="text-center">
           <div className="position-relative mb-4">
             <img
-              src={userProfile.profilePhoto}
+              src={userProfile.profileImage}
               alt="Profile"
               className="rounded-circle"
               style={{
@@ -113,9 +141,9 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
               }}
             />
           </div>
-          <h4 className="mb-2">{userProfile.Name}</h4>
+          <h4 className="mb-2">{userProfile.username}</h4>
           <p className="text-muted mb-3">{userProfile.email}</p>
-          <p className="mb-0">{userProfile.aboutMe}</p>
+          <p className="mb-0">{userProfile.bio}</p>
         </div>
       </Card.Body>
 
@@ -125,16 +153,16 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group className="mb-3" controlId="Name">
-              <Form.Label>Name</Form.Label>
+            <Form.Group className="mb-3" controlId="username">
+              <Form.Label>username</Form.Label>
               <Form.Control
                 type="text"
-                value={tempUserProfile.Name}
+                value={tempUserProfile.username}
                 onChange={handleChange}
               />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="profilePhoto">
-              <Form.Label>Profile Photo</Form.Label>
+            <Form.Group className="mb-3" controlId="profileImage">
+              <Form.Label>Profile Image</Form.Label>
               <Form.Control
                 type="file"
                 accept="image/*"
@@ -144,12 +172,12 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
                 }}
               />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="aboutMe">
-              <Form.Label>About Me</Form.Label>
+            <Form.Group className="mb-3" controlId="bio">
+              <Form.Label>Bio</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                value={tempUserProfile.aboutMe}
+                value={tempUserProfile.bio}
                 onChange={handleChange}
               />
             </Form.Group>
