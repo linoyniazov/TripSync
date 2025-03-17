@@ -23,4 +23,4 @@ const storage = multer.diskStorage({
     console.log("router.post(/file: " + base + req.file?.path);
     res.status(200).send({ url: base + req.file?.path });
   });
-  export = router;
+  export default router;

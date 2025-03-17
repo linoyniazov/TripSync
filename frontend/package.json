@@ -28,6 +28,7 @@
     "clsx": "^2.1.1",
     "express-validator": "^7.2.1",
     "framer-motion": "^12.5.0",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.453.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",

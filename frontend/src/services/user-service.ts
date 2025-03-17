@@ -22,7 +22,7 @@ export const registerUser = (user: IUser) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("userId", response.data._id);  // ✅ שמירת ה- userId
+        localStorage.setItem("userId", response.data._id); // ✅ שמירת ה- userId
 
         resolve(response.data);
       })
@@ -46,7 +46,7 @@ export const loginUser = (user: IUser) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("userId", response.data._id);  // ✅ שמירת ה- userId
+        localStorage.setItem("userId", response.data._id); // ✅ שמירת ה- userId
         resolve(response.data);
       })
       .catch((error) => {
@@ -55,6 +55,7 @@ export const loginUser = (user: IUser) => {
       });
   });
 };
+
 export const googleSignin = (credentialResponse: CredentialResponse) => {
   return new Promise<IUser>((resolve, reject) => {
     console.log("google sign in...");
@@ -66,7 +67,7 @@ export const googleSignin = (credentialResponse: CredentialResponse) => {
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        localStorage.setItem("userId", response.data._id);  
+        localStorage.setItem("userId", response.data._id);
         resolve(response.data);
       })
       .catch((error) => {
