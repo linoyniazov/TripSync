@@ -20,6 +20,7 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
@@ -29,7 +30,8 @@
     "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "react-bootstrap": "^2.10.9"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
