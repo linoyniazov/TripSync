@@ -41,8 +41,8 @@ export interface IPost extends Document {
     description: string;
     photos: string[];
     userId: mongoose.Types.ObjectId; // שינוי ל- ObjectId כדי לקשר למשתמש
-    createdAt?: Date;
-    updatedAt?: Date;
+    // createdAt?: Date;
+    // updatedAt?: Date;
 }
 
 const postSchema = new Schema<IPost>(
@@ -76,7 +76,6 @@ const postSchema = new Schema<IPost>(
             required: true,
         },
     },
-    { timestamps: true } // מוסיף createdAt ו- updatedAt אוטומטית
 );
 
 export default mongoose.model<IPost>("Post", postSchema);
