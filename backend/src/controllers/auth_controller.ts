@@ -13,15 +13,18 @@ const googleSignin = async (req: Request, res: Response) => {
       idToken: req.body.credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
+    console.log("Token verified successfully:", ticket.getPayload());
+
     const payload = ticket.getPayload();
     const email = payload?.email;
     if (email != null) {
       let user = await userModel.findOne({ email: email });
+
       if (user == null) {
         user = await userModel.create({
          username: payload.name,
           email: email,
-          password: "",
+          password: " ",
           profileImage: payload.picture,
         });
       }
@@ -43,7 +46,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const profileImage = req.body.profileImage || "https://example.com/default-avatar.jpg";
+    const profileImage = req.body.profileImage || "http://localhost:5000/public/avatar.jpeg";
 
     if (!username || !email || !password) {
       return res.status(400).send("Missing email, password or name ");
