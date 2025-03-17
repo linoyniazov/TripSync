@@ -45,6 +45,7 @@ const router = express.Router();
 */
 
 router.post("/register", authController.register);
+router.post("/google", authController.googleSignin);
 
 /**
  * @swagger

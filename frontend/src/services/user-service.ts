@@ -1,27 +1,53 @@
-import apiClient from "./axiosInstance"
+import { CredentialResponse } from "@react-oauth/google";
+import apiClient from "./axiosInstance";
 
 export interface IUser {
-    email: string,
-    password: string,
-    username: string,
-    profileImage: string,
-    _id?: string,
+  email: string;
+  password?: string;
+  username: string;
+  profileImage?: string;
+  _id?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  
 }
 export const registerUser = (user: IUser) => {
-    return new Promise<IUser>((resolve, reject) => {
-
-
+  return new Promise<IUser>((resolve, reject) => {
     console.log("User registered successfully!");
     console.log(user);
     apiClient
       .post("/auth/register", user)
       .then((response) => {
         console.log(response);
+
+        // ✅ שמירת טוקנים ב- localStorage
+        localStorage.setItem("accessToken", response.data.accessToken);
+        localStorage.setItem("refreshToken", response.data.refreshToken);
         resolve(response.data);
       })
       .catch((error) => {
         console.error("Error registering user:", error);
         reject(error);
       });
-    })
+  });
+};
+export const googleSignin = (credentialResponse: CredentialResponse) => {
+    return new Promise<IUser>((resolve, reject) => {
+      console.log("google sign in");
+      apiClient
+        .post("/auth/google", credentialResponse)
+        .then((response) => {
+          console.log(response);
+  
+          // ✅ שמירת טוקנים ב- localStorage
+          localStorage.setItem("accessToken", response.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error("Error registering user:", error);
+          reject(error);
+        });
+    });
   };
+  
