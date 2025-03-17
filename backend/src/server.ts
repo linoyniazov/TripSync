@@ -11,8 +11,12 @@ import authRoute from "./routes/auth_route";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 import aiRoute from "./routes/ai_route";
+import cors from 'cors';
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:5173'  // הדומיין של הפרונטאנד
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/user", userRoute);
