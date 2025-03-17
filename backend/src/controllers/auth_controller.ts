@@ -74,7 +74,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
       username: user.username,
       email: user.email,
       profileImage: user.profileImage,
-      // accessToken: tokens.accessToken,
+      accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
   } catch (err) {
@@ -380,12 +380,12 @@ export const authMiddleware = (
     res.status(401).send("Access Denied");
     return;
   }
-  if (!process.env.TOKEN_SECRET) {
+  if (!process.env.JWT_SECRET) {
     res.status(500).send("Server Error");
     return;
   }
 
-  jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
     if (err) {
       res.status(401).send("Access Denied");
       return;
