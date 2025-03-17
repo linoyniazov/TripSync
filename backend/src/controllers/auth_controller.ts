@@ -44,7 +44,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const profileImage = req.body.profileImage;
+    const profileImage = req.body.profileImage || "https://example.com/default-avatar.jpg";
 
     if (!username || !email || !password) {
       return res.status(400).send("Missing email, password or name ");
@@ -54,6 +54,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     if (existingUser) {
       return res.status(406).send("Email already exists");
     }
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -83,29 +84,6 @@ const register = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-// const generateTokens = (_id: string): { accessToken: string, refreshToken: string } | null => {
-//     const random = Math.floor(Math.random() * 1000000);
-//     const jwtSecret = process.env.JWT_SECRET;
-//     const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
-
-//     if (!jwtSecret || !jwtRefreshSecret) {
-//         throw new Error("Missing JWT configuration");
-//     }
-//     const accessToken = jwt.sign(
-//         { _id: _id },
-//         process.env.JWT_SECRET as string,
-//         { expiresIn: process.env.JWT_EXPIRATION || "24h" } as jwt.SignOptions
-//     );
-
-//     const refreshToken = jwt.sign(
-//         { _id: _id, random: random },
-//         jwtRefreshSecret,
-//         { expiresIn: '7d' } as jwt.SignOptions
-//     );
-
-//     return { accessToken, refreshToken };
-// }
-
 const generateTokens = (
   _id: string
 ): { accessToken: string; refreshToken: string } | null => {
@@ -127,50 +105,6 @@ const generateTokens = (
 
   return { accessToken, refreshToken };
 };
-
-// const login = async (req: Request, res: Response) => {
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     if (!email || !password) {
-//         res.status(400).send("wrong email or password");
-//         return;
-//     }
-//     try {
-//         const user = await userModel.findOne({ email: email });
-//         if (!user) {
-//             res.status(401).send("wrong email or password");
-//             return;
-//         }
-//         const validPassword = await bcrypt.compare(password, user.password);
-//         console.log("validPassword", validPassword);
-//         if (!validPassword) {
-//             res.status(401).send("wrong email or password");
-//             return;
-//         }
-
-//         const userId: string = user._id.toString();
-//         const tokens = generateTokens(userId);
-//         if (!tokens) {
-//             res.status(500).send("missing auth configuration");
-//             return;
-//         }
-
-//         if (user.refreshTokens == null) {
-//             user.refreshTokens = [];
-//         }
-//         user.refreshTokens.push(tokens.refreshToken);
-//         await user.save();
-//         res.status(200).send({
-//             email: user.email,
-//             _id: user._id,
-//             accessToken: tokens.accessToken,
-//             refreshToken: tokens.refreshToken,
-//         });
-//     } catch (err) {
-//         console.error(err);
-//         return res.status(500).send("Error logging in");
-//     }
-// };
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -317,56 +251,6 @@ const refresh = async (req: Request, res: Response) => {
 type TokenPayload = {
   _id: string;
 };
-
-// export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-//     const authHeader = req.headers['authorization'];
-//     console.log("Authorization Header:", authHeader);
-
-//     const token = authHeader && authHeader.split(' ')[1];
-//     if (!token) {
-//         res.status(401).send("missing token");
-//         return;
-//     }
-//     if (!process.env.JWT_SECRET) {
-//         res.status(500).send("missing auth configuration");
-//         return;
-//     }
-//     jwt.verify(token, process.env.JWT_SECRET, (err, data) => {
-//         if (err) {
-//             console.error("JWT verification failed:", err);
-//             res.status(403).send("invalid token");
-//             return;
-//         }
-//         const payload = data as TokenPayload;
-//         req.query.user= payload._id;
-//         console.log("Extracted User ID:", req.query.user);
-//         next();
-//     });
-// };
-// export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-//     console.log("Authorization Header:", req.headers.authorization);
-
-//     const authorization = req.header('Authorization');
-//     const token = authorization && authorization.split(' ')[1];
-
-//     if (!token) {
-//         res.status(401).send('Access Denied');
-//         return;
-//     }
-//     if (!process.env.JWT_SECRET) {
-//         res.status(500).send('Server Error');
-//         return;
-//     }
-
-//     jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-//         if (err) {
-//             res.status(401).send('Access Denied');
-//             return;
-//         }
-//         req.params.userId = (payload as TokenPayload)._id;
-//         next();
-//     });
-// };
 
 export const authMiddleware = (
   req: Request,

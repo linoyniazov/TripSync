@@ -35,6 +35,19 @@ export const getById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+// export const getById = async (req: Request, res: Response) => {
+//   try {
+//     const userId = req.params.id;
+//     const user = await UserModel.findById(userId).select("-password -refreshToken");
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     res.status(200).json({ userProfile: user }); // ✅ מחזירים את הנתונים בתוך userProfile
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
+
 
 // Update user by ID
 

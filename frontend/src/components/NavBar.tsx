@@ -11,9 +11,8 @@ const NavBar = () => {
   );
 
   useEffect(() => {
-    // כל שינוי של הניווט יעדכן את הסטטוס של המשתמש
     setIsAuthenticated(!!localStorage.getItem("accessToken"));
-  }, [location.pathname]); // מתעדכן בכל שינוי של ה-URL
+  }, [location.pathname]); 
 
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem("refreshToken");
