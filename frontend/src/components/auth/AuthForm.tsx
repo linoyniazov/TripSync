@@ -5,7 +5,7 @@ import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { uploadImage } from "../../services/file-service";
 import { registerUser, loginUser, googleSignin, IUser } from "../../services/user-service";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function AuthForm() {
   const [isLoginForm, setIsLoginForm] = useState(true); // מצב: התחברות או הרשמה
@@ -14,6 +14,7 @@ function AuthForm() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const imgSelected = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -46,7 +47,7 @@ function AuthForm() {
       const res = await registerUser(user);
       console.log(res);
       if (res.accessToken) {
-        window.location.href = "/home";
+        navigate("/home");
       }
     } catch (error) {
       console.log("Error registering user:", error);
@@ -63,7 +64,7 @@ function AuthForm() {
       const res = await loginUser(user);
       console.log(res);
       if (res.accessToken) {
-        window.location.href = "/home";
+        navigate("/home");
       }
     } catch (error) {
       console.log("Error logging in:", error);
@@ -71,19 +72,16 @@ function AuthForm() {
   };
 
   const onGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    console.log("🔹 Google Sign-in Response:", credentialResponse);
     try {
       const res = await googleSignin(credentialResponse);
-      console.log("🔹 Server Response:", res);  // 🚀 כאן תראי מה השרת מחזיר
-
+      console.log(res);
       if (res.accessToken) {
-        console.log("✅ Login successful! Redirecting...");
-        window.location.href = "/home"; // המעבר קורה רק אחרי שבדקנו את התגובה
+        navigate("/home");
       }
     } catch (error) {
-      console.log("❌ Error:", error);
+      console.log(error);
     }
-};
+  };
 
   const onGoogleLoginFailure = () => {
     console.log("Google login failure");
