@@ -73,18 +73,32 @@ function AuthForm() {
     }
   };
 
+  // const onGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+  //   console.log("Google login success:", credentialResponse);
+  //   try {
+  //     const res = await googleSignin(credentialResponse);
+  //     console.log(res);
+  //     if (res.accessToken) {
+  //       navigate("/home");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const onGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+    console.log("Google login success:", credentialResponse);
     try {
-      const res = await googleSignin(credentialResponse);
+      const res = await googleSignin({ credential: credentialResponse.credential }); // ודאי שהטוקן נשלח בצורה תקינה
       console.log(res);
       if (res.accessToken) {
         navigate("/home");
       }
     } catch (error) {
-      console.log(error);
+      console.log("Google Sign-In error:", error);
     }
   };
-
+  
   const onGoogleLoginFailure = () => {
     console.log("Google login failure");
   };
