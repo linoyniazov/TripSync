@@ -5,7 +5,7 @@ import express, { Request, Response } from 'express';
 
     const router = express.Router();
 
-    const MODEL_NAME = "gemini-pro";
+    const MODEL_NAME = "gemini-1.5-flash";
     const API_KEY = process.env.GEMINI_API_KEY;
 
     if (!API_KEY) {
@@ -16,8 +16,8 @@ import express, { Request, Response } from 'express';
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     router.post('/generate-plan', async (req: Request, res: Response) => {
+        console.log("Request received at /ai/generate-plan");
         console.log("Request body:", req.body);
-        console.log("Request received at /generate-plan");
 
     try {
     const { country, duration, cities, budget, interests } = req.body;
