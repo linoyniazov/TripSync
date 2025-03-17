@@ -3,8 +3,9 @@ import avatar from "../assets/avatar.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { uploadImage } from "../services/file-service";
-import { registerUser, IUser } from "../services/user-service";
-
+import { registerUser, googleSignin, IUser } from "../services/user-service";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { Link } from "react-router-dom";
 
 function Registration() {
   const [profileImage, setProfileImage] = useState<File>();
@@ -37,8 +38,29 @@ function Registration() {
       profileImage: url,
     };
 
-    const res= await registerUser(user);
+    const res = await registerUser(user);
     console.log(res);
+  };
+
+  const onGoogleLoginSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+    // Add Google login logic here
+    console.log(credentialResponse);
+    try {
+      const res = await googleSignin(credentialResponse);
+      console.log(res);
+      if (res.accessToken) {
+        window.location.href = "/home"; // אפשר להשתמש גם ב- useNavigate אם את עם React Router
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onGoogleLoginFailure = () => {
+    // Add Google login failure logic here
+    console.log("Google login failure");
   };
 
   return (
@@ -98,6 +120,14 @@ function Registration() {
       <button type="button" className="btn btn-primary" onClick={register}>
         Register
       </button>
+      <div className="text-center">
+        Already have an account? <Link to="/login">Log in to account</Link>
+      </div>
+
+      <GoogleLogin
+        onSuccess={onGoogleLoginSuccess}
+        onError={onGoogleLoginFailure}
+      />
     </div>
   );
 }
