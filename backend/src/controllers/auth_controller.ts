@@ -1,4 +1,3 @@
-
 import express, { Request, Response, NextFunction } from "express";
 import userModel from "../models/user_model";
 import bcrypt from "bcrypt";
