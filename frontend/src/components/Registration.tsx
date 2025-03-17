@@ -3,7 +3,8 @@ import avatar from "../assets/avatar.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { uploadImage } from "../services/file-service";
-import { registerUser, IUser } from "../services/user-service";
+import { registerUser, googleSignin, IUser } from "../services/user-service";
+import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
 
 
 function Registration() {
@@ -22,6 +23,7 @@ function Registration() {
     console.log("Selecting image...");
     fileInputeRef.current?.click();
   };
+  
 
   const register = async () => {
     // console.log("Registering...");
@@ -39,6 +41,22 @@ function Registration() {
 
     const res= await registerUser(user);
     console.log(res);
+  };
+
+  const onGoogleLoginSuccess=async (credentialResponse: CredentialResponse) => {
+    // Add Google login logic here
+    console.log(credentialResponse);
+    try {
+    const res= await googleSignin(credentialResponse);
+    console.log(res);
+    } catch (error) {
+    console.log(error);
+    }
+  }
+
+  const onGoogleLoginFailure= () => {
+    // Add Google login failure logic here
+    console.log("Google login failure");
   };
 
   return (
@@ -98,8 +116,8 @@ function Registration() {
       <button type="button" className="btn btn-primary" onClick={register}>
         Register
       </button>
-    </div>
-  );
+      <GoogleLogin onSuccess={onGoogleLoginSuccess} onError={onGoogleLoginFailure} />
+    </div>);
 }
 
 export default Registration;
