@@ -812,12 +812,12 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         res.status(401).send('Access Denied');
         return;
     }
-    if (!process.env.TOKEN_SECRET) {
+    if (!process.env.JWT_SECRET) {
         res.status(500).send('Server Error');
         return;
     }
 
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
         if (err) {
             res.status(401).send('Access Denied');
             return;
