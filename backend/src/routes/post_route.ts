@@ -42,7 +42,6 @@ import { authMiddleware } from "../controllers/auth_controller";
  *         - userId
  */
 
-
 /**
 * @swagger
 * /post:
@@ -120,11 +119,42 @@ router.post("/", authMiddleware, (req: Request, res: Response) => {
  * @swagger
  * /post:
  *   get:
- *     summary: Get all posts
+ *     summary: Get all posts with pagination
  *     tags: [Posts]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: The page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: The number of items per page
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Successful response with paginated posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 totalPosts:
+ *                   type: integer
+ *                   description: Total number of posts
+ *                 currentPage:
+ *                   type: integer
+ *                   description: Current page number
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
  *       500:
  *         description: Internal server error
  */
@@ -219,9 +249,6 @@ router.patch("/:id", authMiddleware, (req: Request, res: Response) => {
 *         description: Internal server error
 */
 
-router.delete("/:id", authMiddleware, (req: Request, res: Response) => {
-  postController.deleteById(req, res);
-});
 router.delete("/:id", authMiddleware, (req: Request, res: Response) => {
   postController.deleteById(req, res);
 });

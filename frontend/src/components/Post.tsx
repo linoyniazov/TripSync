@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Card, Container, Row, Col, Button } from "react-bootstrap";
-import apiClient from '../services/axiosInstance';
-import { RiMapPin2Line, RiHeart3Line, RiHeart3Fill } from 'react-icons/ri';
-import Comments from './Comments';
-import AddComment from './AddComment';
-import ShowComments from './ShowComments';
+import apiClient from "../services/axiosInstance";
+import { RiMapPin2Line, RiHeart3Line, RiHeart3Fill } from "react-icons/ri";
+import Comments from "./Comments";
+import AddComment from "./AddComment";
+import ShowComments from "./ShowComments";
 
 export interface IPost {
   _id: string;
@@ -44,7 +44,9 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
     const getLikesCount = async () => {
       try {
-        const response = await apiClient.get(`/postInteraction/likes/${post._id}`);
+        const response = await apiClient.get(
+          `/postInteraction/likes/${post._id}`
+        );
         setLikesCount(response.data.likesCount);
       } catch (error) {
         console.error("Failed to fetch likes count:", error);
@@ -65,14 +67,18 @@ const Post: React.FC<PostProps> = ({ post }) => {
       };
 
       if (!isLiked) {
-        await apiClient.post('/postInteraction/like', { postId: post._id }, config);
-        setLikesCount(prev => prev + 1);
+        await apiClient.post(
+          "/postInteraction/like",
+          { postId: post._id },
+          config
+        );
+        setLikesCount((prev) => prev + 1);
       } else {
-        await apiClient.delete('/postInteraction/like', { 
+        await apiClient.delete("/postInteraction/like", {
           data: { postId: post._id },
-          headers: config.headers 
+          headers: config.headers,
         });
-        setLikesCount(prev => prev - 1);
+        setLikesCount((prev) => prev - 1);
       }
       setIsLiked(!isLiked);
     } catch (error) {
@@ -81,7 +87,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
   };
 
   const handleCommentAdded = () => {
-    setRefreshComments(prev => prev + 1);
+    setRefreshComments((prev) => prev + 1);
   };
 
   return (
@@ -93,7 +99,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
               className="w-100"
               src={post.photos[0]}
               alt={`Travel photo of ${post.city}`}
-              style={{ height: '400px', objectFit: 'cover' }}
+              style={{ height: "400px", objectFit: "cover" }}
             />
             <Card.Body>
               <div className="d-flex align-items-center mb-3">
@@ -101,10 +107,13 @@ const Post: React.FC<PostProps> = ({ post }) => {
                   src={`https://ui-avatars.com/api/?name=${userName}&background=14b8a6&color=ffffff`}
                   alt={userName}
                   className="rounded-circle"
-                  style={{ width: '40px', height: '40px' }}
+                  style={{ width: "40px", height: "40px" }}
                 />
                 <div className="ms-3">
-                  <h5 className="mb-0" style={{ color: "var(--primary-color)" }}>
+                  <h5
+                    className="mb-0"
+                    style={{ color: "var(--primary-color)" }}
+                  >
                     {userName}
                   </h5>
                   <div className="d-flex align-items-center text-muted">
@@ -119,7 +128,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
               <div className="border-top pt-3">
                 <div className="d-flex align-items-center gap-3 mb-3">
-                  <Button 
+                  <Button
                     variant="outline-danger"
                     className="d-flex align-items-center gap-2"
                     onClick={handleLikeClick}
@@ -127,7 +136,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
                     {isLiked ? <RiHeart3Fill /> : <RiHeart3Line />}
                     <span>{likesCount} Likes</span>
                   </Button>
-                  <AddComment postId={post._id} onCommentAdded={handleCommentAdded} />
+                  <AddComment
+                    postId={post._id}
+                    onCommentAdded={handleCommentAdded}
+                  />
                   <ShowComments postId={post._id} />
                 </div>
                 <Comments key={refreshComments} postId={post._id} />
