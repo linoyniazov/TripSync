@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Card, Container, Row, Col, Carousel } from "react-bootstrap";
-import apiClient  from '../services/axiosInstance';
+import  apiClient  from '../services/axiosInstance';
+import { RiMapPin2Line } from 'react-icons/ri';
+import Comments from './Comments';
+import AddComment from './AddComment';
+import ShowComments from './ShowComments';
 
 export interface IPost {
   _id: string;
@@ -17,6 +21,8 @@ interface PostProps {
 
 const Post: React.FC<PostProps> = ({ post }) => {
   const [userName, setUserName] = useState("");
+  const [refreshComments, setRefreshComments] = useState(0);
+  
 
   useEffect(() => {
     const getUserName = async () => {
@@ -40,6 +46,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
     }
   }, [post.userId]);
 
+  const handleCommentAdded = () => {
+    setRefreshComments(prev => prev + 1);
+  };
+
   return (
     <Container>
       <Row className="justify-content-center">
@@ -51,26 +61,40 @@ const Post: React.FC<PostProps> = ({ post }) => {
                   <img
                     className="d-block w-100"
                     src={photo}
-                    alt={`Slide ${index}`}
+                    alt={`Travel photo ${index + 1}`}
+                    style={{ height: '400px', objectFit: 'cover' }}
                   />
                 </Carousel.Item>
               ))}
             </Carousel>
             <Card.Body>
-              <Card.Subtitle className="mb-2 text-muted">
-                {`By ${userName}`}
-              </Card.Subtitle>
-              <Card.Title>
-                <Row>
-                  <Col>{`My trip to ${post.city}`}</Col>
-                </Row>
-              </Card.Title>
-              <Card.Text>{post.description}</Card.Text>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <i className="fas fa-map-marker-alt text-muted me-2"></i>
-                  {post.location}
+              <div className="d-flex align-items-center mb-3">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${userName}&background=14b8a6&color=ffffff`}
+                  alt={userName}
+                  className="rounded-circle"
+                  style={{ width: '40px', height: '40px' }}
+                />
+                <div className="ms-3">
+                  <h5 className="mb-0" style={{ color: "var(--primary-color)" }}>
+                    {userName}
+                  </h5>
+                  <div className="d-flex align-items-center text-muted">
+                    <RiMapPin2Line className="me-1" />
+                    {post.location}
+                  </div>
                 </div>
+              </div>
+
+              <h4 className="mb-3">My trip to {post.city}</h4>
+              <Card.Text className="mb-4">{post.description}</Card.Text>
+
+              <div className="border-top pt-3">
+                <div className="d-flex gap-3">
+                  <AddComment postId={post._id} onCommentAdded={handleCommentAdded} />
+                  <ShowComments postId={post._id} />
+                </div>
+                <Comments key={refreshComments} postId={post._id} />
               </div>
             </Card.Body>
           </Card>
