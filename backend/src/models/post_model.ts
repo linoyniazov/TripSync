@@ -6,8 +6,7 @@ export interface IPost extends Document {
     description: string;
     photos: string[];
     userId: mongoose.Types.ObjectId; // שינוי ל- ObjectId כדי לקשר למשתמש
-    // createdAt?: Date;
-    // updatedAt?: Date;
+    
 }
 
 const postSchema = new Schema<IPost>(
