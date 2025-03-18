@@ -1,12 +1,19 @@
-import Post, {IPost} from "../models/post_model";
+import Post, { IPost } from "../models/post_model";
 import { Request, Response } from 'express';
 
 class postController {
-
     async getAll(req: Request, res: Response) {
         console.log("getAllPosts");
         try {
-            const posts = await Post.find();
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const skip = (page - 1) * limit;
+
+            const posts = await Post.find()
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
             res.send(posts);
         } catch (error) {
             res.status(500).json({ error: 'Internal Server Error' });
