@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Card, Button, Modal, Form } from "react-bootstrap";
 import apiClient from "../services/axiosInstance";
-import { RiEditLine } from "react-icons/ri";
+import { RiEditLine, RiMailLine } from "react-icons/ri";
 
 interface AboutMeProps {
   userId: string;
@@ -50,7 +49,7 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
         return;
       }
 
-      setUserProfile({
+      const profileData = {
         username: response.data.username || defaultUserProfile.username,
         email: response.data.email || defaultUserProfile.email,
         profileImage:
@@ -58,7 +57,10 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
             ? response.data.profileImage
             : DEFAULT_AVATAR,
         bio: response.data.bio || defaultUserProfile.bio,
-      });
+      };
+
+      setUserProfile(profileData);
+      setTempUserProfile(profileData);
     } catch (error) {
       console.error("❌ Error fetching user profile:", error);
     }
@@ -102,52 +104,94 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
   };
 
   return (
-    <Card className="shadow-sm">
-      <Card.Body>
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h3 style={{ color: "var(--primary-color)", margin: 0 }}>About Me</h3>
-          <Button
-            variant="link"
-            onClick={() => setShowEditModal(true)}
-            style={{ color: "var(--primary-color)", padding: 0 }}
-          >
-            <RiEditLine size={20} />
-          </Button>
+    <Card className="border-0 shadow-lg rounded-xl overflow-hidden bg-white">
+      {/* Cover Image */}
+      <div 
+        className="position-relative"
+        style={{ 
+          height: '140px',
+          background: 'linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%)',
+        }}
+      >
+        <h3 
+          className="position-absolute bottom-0 start-0 m-3 text-white mb-3"
+          style={{ fontSize: '1.5rem', fontWeight: '600' }}
+        >
+          About Me
+        </h3>
+        <Button
+          variant="light"
+          onClick={() => setShowEditModal(true)}
+          className="position-absolute top-0 end-0 m-3 d-flex align-items-center gap-2 shadow-sm"
+          style={{ 
+            borderRadius: '20px',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          }}
+        >
+          <RiEditLine size={16} />
+          <span>Edit Profile</span>
+        </Button>
+      </div>
+
+      {/* Profile Image */}
+      <div className="text-center" style={{ marginTop: '-50px' }}>
+        <div className="position-relative d-inline-block">
+          <img
+            src={userProfile.profileImage || DEFAULT_AVATAR}
+            alt="Profile"
+            className="rounded-circle border-4 border-white shadow-sm"
+            style={{
+              width: "100px",
+              height: "100px",
+              objectFit: "cover",
+            }}
+          />
         </div>
-        <div className="text-center">
-          <div className="position-relative mb-4">
-            <img
-              src={userProfile.profileImage || DEFAULT_AVATAR}
-              alt="Profile"
-              className="rounded-circle"
-              style={{
-                width: "120px",
-                height: "120px",
-                objectFit: "cover",
-                border: "3px solid var(--primary-color)",
-              }}
-            />
+      </div>
+
+      <Card.Body className="pt-3">
+        {/* User Info */}
+        <div className="text-center mb-4">
+          <h3 className="mb-1 fw-bold" style={{ color: "#2d3748" }}>
+            {userProfile.username}
+          </h3>
+          <p className="text-muted mb-4" style={{ fontSize: '0.95rem' }}>
+            {userProfile.bio}
+          </p>
+        </div>
+
+        {/* Contact Info */}
+        <div className="d-flex flex-column gap-2 border-top pt-4">
+          <div className="d-flex align-items-center gap-2">
+            <RiMailLine className="text-primary" />
+            <span className="text-muted">{userProfile.email}</span>
           </div>
-          <h4 className="mb-2">{userProfile.username}</h4>
-          <p className="text-muted mb-3">{userProfile.email}</p>
-          <p className="mb-0">{userProfile.bio}</p>
         </div>
       </Card.Body>
 
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
-        <Modal.Header closeButton>
+      {/* Edit Modal */}
+      <Modal 
+        show={showEditModal} 
+        onHide={() => setShowEditModal(false)} 
+        centered
+        className="rounded-4"
+      >
+        <Modal.Header closeButton className="border-0 pb-0">
           <Modal.Title style={{ color: "var(--primary-color)" }}>
             Edit Profile
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="pt-2">
           <Form>
             <Form.Group className="mb-3" controlId="username">
-              <Form.Label>username</Form.Label>
+              <Form.Label>Username</Form.Label>
               <Form.Control
                 type="text"
                 value={tempUserProfile.username}
                 onChange={handleChange}
+                className="rounded-lg border-2"
+                placeholder="Enter your username"
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="profileImage">
@@ -159,6 +203,7 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
                   const files = (e.target as HTMLInputElement).files;
                   if (files) setSelectedFile(files[0]);
                 }}
+                className="rounded-lg border-2"
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="bio">
@@ -168,18 +213,28 @@ const AboutMe = ({ userId, refreshProfile }: AboutMeProps) => {
                 rows={3}
                 value={tempUserProfile.bio}
                 onChange={handleChange}
+                className="rounded-lg border-2"
+                placeholder="Tell us about yourself..."
               />
             </Form.Group>
           </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+        <Modal.Footer className="border-0 pt-0">
+          <Button 
+            variant="outline-secondary" 
+            onClick={() => setShowEditModal(false)}
+            className="rounded-pill px-4"
+          >
             Cancel
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            style={{ backgroundColor: "var(--primary-color)", borderColor: "var(--primary-color)" }}
+            className="rounded-pill px-4"
+            style={{
+              backgroundColor: "var(--primary-color)",
+              borderColor: "var(--primary-color)"
+            }}
           >
             Save Changes
           </Button>
