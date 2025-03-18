@@ -42,44 +42,46 @@ const Post: React.FC<PostProps> = ({ post }) => {
       }
     };
 
-    const getLikesCount = async () => {
+    const getLikesData = async () => {
       try {
+        const userId = localStorage.getItem("userId"); // נוסיף userId לשליפה
         const response = await apiClient.get(
-          `/postInteraction/likes/${post._id}`
+          `/postInteraction/likes/${post._id}?userId=${userId}`
         );
         setLikesCount(response.data.likesCount);
+        setIsLiked(response.data.isLikedByUser); // נוסיף את הסטטוס של הלייק
       } catch (error) {
-        console.error("Failed to fetch likes count:", error);
+        console.error("Failed to fetch like data:", error);
       }
     };
 
     if (post.userId) {
       getUserName();
-      getLikesCount();
+      getLikesData();
     }
   }, [post.userId, post._id]);
 
   const handleLikeClick = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const config = {
-        headers: { Authorization: `Bearer ${token}` },
-      };
+      const userId = localStorage.getItem("userId"); // נוסיף userId כדי לעדכן לייקים נכונים
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
       if (!isLiked) {
         await apiClient.post(
           "/postInteraction/like",
-          { postId: post._id },
+          { postId: post._id, userId },
           config
         );
         setLikesCount((prev) => prev + 1);
       } else {
         await apiClient.delete("/postInteraction/like", {
-          data: { postId: post._id },
+          data: { postId: post._id, userId }, // נוסיף את userId לבקשה
           headers: config.headers,
         });
         setLikesCount((prev) => prev - 1);
       }
+
       setIsLiked(!isLiked);
     } catch (error) {
       console.error("Failed to update like:", error);
@@ -136,6 +138,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
                     {isLiked ? <RiHeart3Fill /> : <RiHeart3Line />}
                     <span>{likesCount} Likes</span>
                   </Button>
+
                   <AddComment
                     postId={post._id}
                     onCommentAdded={handleCommentAdded}
