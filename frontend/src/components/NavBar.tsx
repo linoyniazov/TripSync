@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Navbar, Nav, Container, Form, FormControl } from "react-bootstrap";
+import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import apiClient from "../services/axiosInstance";
 
@@ -33,15 +33,11 @@ const NavBar = () => {
       }
     }
 
-    // ניקוי הנתונים מה-localStorage
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("userId");
-
-    // עדכון הסטטוס כדי לגרום לניווט אוטומטי
     setIsAuthenticated(false);
-
-    navigate("/"); // חזרה לעמוד התחברות
+    navigate("/");
   };
 
   return (
@@ -53,14 +49,6 @@ const NavBar = () => {
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Form className="d-flex mx-auto" style={{ maxWidth: "500px" }}>
-            <FormControl
-              type="search"
-              placeholder="Search destinations, travelers, or stories..."
-              className="me-2 rounded-pill"
-              aria-label="Search"
-            />
-          </Form>
           <Nav className="ms-auto">
             <Nav.Link as={Link} to="/home">
               Home
