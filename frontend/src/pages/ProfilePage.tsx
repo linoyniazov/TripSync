@@ -13,12 +13,10 @@ import apiClient from "../services/axiosInstance";
 const ProfilePage = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId") || "";
-  console.log("🔍 userId from localStorage:", userId);
   const [refreshKey, setRefreshKey] = useState(0);
   const [userData, setUserData] = useState<{ profileImage?: string }>({});
 
   useEffect(() => {
-    // ❇️ שליפת נתוני המשתמש כולל תמונה
     const fetchUserProfile = async () => {
       try {
         const response = await apiClient.get(`/user/${userId}`);
@@ -40,35 +38,85 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen pb-5">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
       <TopBar />
-      <Container style={{ marginTop: "30px" }}>
-        <Row>
-          <Col md={4} className="text-center">
-            {/* ✅ הצגת תמונת פרופיל */}
-            <AboutMe userId={userId} refreshProfile={refreshProfile} />
-          </Col>
-          <Col md={8}>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 style={{ color: "var(--primary-color)" }}>My Travel Stories</h3>
-              <Button
-                variant="outline-primary"
-                style={{
-                  borderRadius: "20px",
-                  padding: "8px 20px",
-                  borderColor: "var(--primary-color)",
-                  color: "var(--primary-color)",
-                }}
-                onClick={handleNavigate}
-              >
-                <RiAddCircleLine size={20} />
-                <span className="ms-2">Write New Post</span>
-              </Button>
+      <Container className="py-5">
+        <Row className="g-4">
+          {/* Profile Section */}
+          <Col lg={4}>
+            <div className="sticky-top" style={{ top: '2rem' }}>
+              <AboutMe userId={userId} refreshProfile={refreshProfile} />
             </div>
-            <UserPostsList userId={userId} key={refreshKey} />
+          </Col>
+
+          {/* Posts Section */}
+          <Col lg={8}>
+            <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
+              <div className="d-flex justify-content-between align-items-center">
+                <h3 
+                  className="mb-0 fw-bold"
+                  style={{ 
+                    background: 'linear-gradient(to right, #14b8a6, #06b6d4)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
+                  My Travel Stories
+                </h3>
+                <Button
+                  variant="outline-primary"
+                  onClick={handleNavigate}
+                  className="d-flex align-items-center gap-2 rounded-pill px-4 py-2 border-2 shadow-sm"
+                  style={{
+                    borderColor: "var(--primary-color)",
+                    color: "var(--primary-color)",
+                    transition: "all 0.3s ease"
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--primary-color)";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "var(--primary-color)";
+                  }}
+                >
+                  <RiAddCircleLine size={20} />
+                  <span>New Story</span>
+                </Button>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <UserPostsList userId={userId} key={refreshKey} />
+            </div>
           </Col>
         </Row>
       </Container>
+
+      <style>
+        {`
+          .sticky-top {
+            z-index: 10;
+          }
+          
+          @media (max-width: 991px) {
+            .sticky-top {
+              position: relative !important;
+              top: 0 !important;
+            }
+          }
+
+          .rounded-xl {
+            border-radius: 1rem;
+          }
+
+          .shadow-lg {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+                        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+          }
+        `}
+      </style>
     </div>
   );
 };

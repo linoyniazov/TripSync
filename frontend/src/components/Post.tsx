@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Container, Row, Col, Carousel, Button } from "react-bootstrap";
+import { Card, Container, Row, Col, Button } from "react-bootstrap";
 import apiClient from '../services/axiosInstance';
 import { RiMapPin2Line, RiHeart3Line, RiHeart3Fill } from 'react-icons/ri';
 import Comments from './Comments';
@@ -89,18 +89,12 @@ const Post: React.FC<PostProps> = ({ post }) => {
       <Row className="justify-content-center">
         <Col lg={8} xl={6}>
           <Card className="mb-4 shadow-sm">
-            <Carousel interval={null}>
-              {post.photos.map((photo, index) => (
-                <Carousel.Item key={index}>
-                  <img
-                    className="d-block w-100"
-                    src={photo}
-                    alt={`Travel photo ${index + 1}`}
-                    style={{ height: '400px', objectFit: 'cover' }}
-                  />
-                </Carousel.Item>
-              ))}
-            </Carousel>
+            <img
+              className="w-100"
+              src={post.photos[0]}
+              alt={`Travel photo of ${post.city}`}
+              style={{ height: '400px', objectFit: 'cover' }}
+            />
             <Card.Body>
               <div className="d-flex align-items-center mb-3">
                 <img
