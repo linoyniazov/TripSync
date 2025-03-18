@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import avatar from "../../assets/avatar.jpeg";
+import { Form, Button, Image } from 'react-bootstrap';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { uploadImage } from "../../services/file-service";
@@ -8,9 +8,8 @@ import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import "./AuthForm.css";
 
-
 function AuthForm() {
-  const [isLoginForm, setIsLoginForm] = useState(true); // מצב: התחברות או הרשמה
+  const [isLoginForm, setIsLoginForm] = useState(true);
   const [profileImage, setProfileImage] = useState<File>();
   const usernameInputRef = useRef<HTMLInputElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -39,15 +38,14 @@ function AuthForm() {
   const handleRegister = async () => {
     const url = await uploadImage(profileImage!);
     const user: IUser = {
-      username: usernameInputRef.current?.value!,
-      email: emailInputRef.current?.value!,
-      password: passwordInputRef.current?.value!,
+      username: usernameInputRef.current ? usernameInputRef.current.value : "",
+      email: emailInputRef.current ? emailInputRef.current.value : "",
+      password: passwordInputRef.current ? passwordInputRef.current.value : "",
       profileImage: url,
     };
 
     try {
       const res = await registerUser(user);
-      console.log(res);
       if (res.accessToken) {
         navigate("/home");
       }
@@ -58,13 +56,12 @@ function AuthForm() {
 
   const handleLogin = async () => {
     const user: IUser = {
-      email: emailInputRef.current?.value!,
-      password: passwordInputRef.current?.value!,
+      email: emailInputRef.current ? emailInputRef.current.value : "",
+      password: passwordInputRef.current ? passwordInputRef.current.value : "",
     };
 
     try {
       const res = await loginUser(user);
-      console.log(res);
       if (res.accessToken) {
         navigate("/home");
       }
@@ -73,24 +70,9 @@ function AuthForm() {
     }
   };
 
-  // const onGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-  //   console.log("Google login success:", credentialResponse);
-  //   try {
-  //     const res = await googleSignin(credentialResponse);
-  //     console.log(res);
-  //     if (res.accessToken) {
-  //       navigate("/home");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
   const onGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
-    console.log("Google login success:", credentialResponse);
     try {
-      const res = await googleSignin({ credential: credentialResponse.credential }); // ודאי שהטוקן נשלח בצורה תקינה
-      console.log(res);
+      const res = await googleSignin({ credential: credentialResponse.credential });
       if (res.accessToken) {
         navigate("/home");
       }
@@ -104,68 +86,140 @@ function AuthForm() {
   };
 
   return (
-    <div className="vstack gap-3 col-md-7 mx-auto">
-      <h1>{isLoginForm ? "Login" : "Register"}</h1>
-
-      {!isLoginForm && (
-        <div className="d-flex flex-column align-items-center position-relative">
-          <img
-            src={profileImage ? URL.createObjectURL(profileImage) : avatar}
-            style={{ height: "230px", width: "230px" }}
-            className="img-fluid"
-          />
-          <button type="button" className="btn position-absolute bottom-0 end-0" onClick={selectImage}>
-            <FontAwesomeIcon icon={faImage} className="fa-xl" />
-          </button>
-        </div>
-      )}
-
-      {!isLoginForm && (
-        <input
-          style={{ display: "none" }}
-          ref={fileInputRef}
-          type="file"
-          onChange={imgSelected}
-        ></input>
-      )}
-
-      {!isLoginForm && (
-        <div className="form-floating">
-          <input ref={usernameInputRef} type="text" className="form-control" id="floatingUsername" placeholder="" />
-          <label htmlFor="floatingUsername">Username</label>
-        </div>
-      )}
-
-      <div className="form-floating">
-        <input ref={emailInputRef} type="text" className="form-control" id="floatingInput" placeholder="" />
-        <label htmlFor="floatingInput">Email</label>
+    <div className="auth-form-container">
+      <div className="image-container">
+        <img src={isLoginForm ? "/login2.jpg" : "/signUp2.jpg"} alt={isLoginForm ? "Login" : "Sign Up"} />
       </div>
-      <div className="form-floating">
-        <input ref={passwordInputRef} type="password" className="form-control" id="floatingPassword" placeholder="" />
-        <label htmlFor="floatingPassword">Password</label>
+      <div className="form-container">
+        <div className="header-container">
+          <h4 className="_firstHeader">
+            {isLoginForm ? "Welcome Back!" : "Hi, Get Started Now"}
+          </h4>
+          <p className="_secondHeader">
+            {isLoginForm ? "Enter your login details" : "Enter details to create your TripSync account"}
+          </p>
+        </div>
+
+        <Form>
+          {!isLoginForm && (
+            <div className="form-control-container text-center">
+              <div className="position-relative d-inline-block">
+                <Image
+                  src={profileImage ? URL.createObjectURL(profileImage) : "/avatar.jpeg"}
+                  style={{ 
+                    height: "150px", 
+                    width: "150px",
+                    objectFit: "cover",
+                    borderRadius: "50%",
+                    border: "3px solid var(--primary-color)"
+                  }}
+                />
+                <Button
+                  variant="link"
+                  className="position-absolute bottom-0 end-0 p-2"
+                  onClick={selectImage}
+                  style={{ 
+                    backgroundColor: "var(--primary-color)",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <FontAwesomeIcon icon={faImage} className="text-white" />
+                </Button>
+              </div>
+              <Form.Control
+                ref={fileInputRef}
+                type="file"
+                className="d-none"
+                onChange={imgSelected}
+              />
+            </div>
+          )}
+
+          {!isLoginForm && (
+            <Form.Group className="form-control-container">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                ref={usernameInputRef}
+                type="text"
+                placeholder="Enter your username"
+                className="rounded-lg"
+              />
+            </Form.Group>
+          )}
+
+          <Form.Group className="form-control-container">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              ref={emailInputRef}
+              type="email"
+              placeholder="Enter your email"
+              className="rounded-lg"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-control-container">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              ref={passwordInputRef}
+              type="password"
+              placeholder="Enter your password"
+              className="rounded-lg"
+            />
+          </Form.Group>
+
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            className="w-100 rounded-lg mb-3"
+            style={{
+              backgroundColor: "var(--primary-color)",
+              borderColor: "var(--primary-color)"
+            }}
+          >
+            {isLoginForm ? "Log In" : "Sign Up"}
+          </Button>
+
+          <div className="text-center mb-3">
+            {isLoginForm ? (
+              <>
+                Don't have an account yet?{" "}
+                <Link 
+                  to="#" 
+                  onClick={() => setIsLoginForm(false)}
+                  style={{ color: "var(--primary-color)" }}
+                >
+                  Create an account
+                </Link>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <Link 
+                  to="#" 
+                  onClick={() => setIsLoginForm(true)}
+                  style={{ color: "var(--primary-color)" }}
+                >
+                  Log in to account
+                </Link>
+              </>
+            )}
+          </div>
+
+          <div className="d-flex justify-content-center">
+            <GoogleLogin 
+              onSuccess={onGoogleLoginSuccess} 
+              onError={onGoogleLoginFailure}
+            />
+          </div>
+        </Form>
       </div>
-
-      <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-        {isLoginForm ? "Log In" : "Register"}
-      </button>
-
-    <div className="text-center">
-        {isLoginForm ? (
-            <>
-                Don't have an account? <Link to="#" onClick={() => setIsLoginForm(false)}>Sign up</Link>
-            </>
-        ) : (
-            <>
-                Already have an account? <Link to="#" onClick={() => setIsLoginForm(true)}>Log in</Link>
-            </>
-        )}
-    </div>
-
-      <GoogleLogin onSuccess={onGoogleLoginSuccess} onError={onGoogleLoginFailure} />
     </div>
   );
 }
 
 export default AuthForm;
-
-
