@@ -1,38 +1,3 @@
-// import mongoose from "mongoose";
-
-// export interface IPost{
-//     city: string;
-//     location: string;
-//     description: string;
-//     photos: string[]; 
-//     userId: string;
-// }
-
-// const postSchema = new mongoose.Schema<IPost>({
-//     city: {
-//         type: String,
-//         required: true,
-//     },
-//     location: {
-//         type: String,
-//         required: true,
-//     },
-//     description: {
-//         type: String,
-//         required: true,
-//     },
-//     photos: {
-//         type: [String],
-//         required: true,
-//     },
-//     userId: {
-//         type: String,
-//         required: true,
-//     },
-// });
-
-// export default mongoose.model<IPost>("Post", postSchema);
-
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPost extends Document {
@@ -76,6 +41,8 @@ const postSchema = new Schema<IPost>(
             required: true,
         },
     },
+    { timestamps: true } // מוסיף createdAt ו- updatedAt אוטומטית
+
 );
 
 export default mongoose.model<IPost>("Post", postSchema);

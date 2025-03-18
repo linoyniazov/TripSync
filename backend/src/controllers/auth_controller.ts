@@ -21,15 +21,21 @@ const googleSignin = async (req: Request, res: Response) => {
       let user = await userModel.findOne({ email: email });
 
       if (user == null) {
+        const tokens = generateTokens(email); // יצירת טוקנים
         user = await userModel.create({
          username: payload.name,
           email: email,
           password: " ",
           profileImage: payload.picture,
+          refreshTokens: tokens ? [tokens.refreshToken as string] : [], // ✅ הוספת refreshToken למשתמש
         });
       }
-      const tokens = generateTokens(user.id); // Fix: Pass the user's ID as a string
-      res.status(200).send({
+      const tokens = generateTokens(user._id.toString());
+       // ודא שה-refreshToken נוסף לרשימה
+    if (!user.refreshTokens) {
+      user.refreshTokens = [];
+    }
+      res.status(200).json({
         _id: user._id,
         username: user.username,
         email: user.email,
@@ -97,52 +103,90 @@ const generateTokens = (
     throw new Error("Missing JWT configuration");
   }
 
-  const accessToken = jwt.sign({ _id: _id, random }, jwtSecret, {
-    expiresIn: process.env.JWT_EXPIRATION || "24h",
-  } as jwt.SignOptions);
+  const accessToken = jwt.sign(
+    { _id: _id },
+    process.env.JWT_SECRET as string,
+    { expiresIn: process.env.JWT_EXPIRATION || "24h" } as jwt.SignOptions
+);
 
-  const refreshToken = jwt.sign({ _id: _id, random }, jwtRefreshSecret, {
-    expiresIn: "7d",
-  } as jwt.SignOptions);
+const refreshToken = jwt.sign(
+  { _id: _id, random: random },
+  jwtRefreshSecret,
+  { expiresIn: '7d' } as jwt.SignOptions
+);
+
 
   return { accessToken, refreshToken };
 };
+
+// const login = async (req: Request, res: Response) => {
+//   try {
+//     const user = await userModel.findOne({ email: req.body.email });
+//     if (!user) {
+//       res.status(400).send("wrong username or password");
+//       return;
+//     }
+//     const validPassword = await bcrypt.compare(
+//       req.body.password,
+//       user.password
+//     );
+//     if (!validPassword) {
+//       res.status(400).send("wrong username or password");
+//       return;
+//     }
+//     if (!process.env.JWT_SECRET) {
+//       res.status(500).send("Server Error");
+//       return;
+//     }
+//     // generate token
+//     const tokens = generateTokens(user._id);
+//     if (!tokens) {
+//       res.status(500).send("Server Error");
+//       return;
+//     }
+//     if (!user.refreshTokens) {
+//       user.refreshTokens = [];
+//     }
+//     user.refreshTokens.push(tokens.refreshToken);
+//     await user.save();
+//     res.status(200).send({
+//       accessToken: tokens.accessToken,
+//       refreshToken: tokens.refreshToken,
+//       _id: user._id,
+//     });
+//   } catch (err) {
+//     res.status(400).send(err);
+//   }
+// };
 
 const login = async (req: Request, res: Response) => {
   try {
     const user = await userModel.findOne({ email: req.body.email });
     if (!user) {
-      res.status(400).send("wrong username or password");
-      return;
+      return res.status(400).send("Wrong username or password");
     }
-    const validPassword = await bcrypt.compare(
-      req.body.password,
-      user.password
-    );
+
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
     if (!validPassword) {
-      res.status(400).send("wrong username or password");
-      return;
+      return res.status(400).send("Wrong username or password");
     }
-    if (!process.env.JWT_SECRET) {
-      res.status(500).send("Server Error");
-      return;
-    }
-    // generate token
+
     const tokens = generateTokens(user._id);
-    if (!tokens) {
-      res.status(500).send("Server Error");
-      return;
-    }
+
     if (!user.refreshTokens) {
       user.refreshTokens = [];
     }
-    user.refreshTokens.push(tokens.refreshToken);
+    if (tokens) {
+      user.refreshTokens.push(tokens.refreshToken); // ✅ שומרים את ה-refreshToken
+    }
     await user.save();
-    res.status(200).send({
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+
+    res.status(200).json({
+      accessToken: tokens?.accessToken,
+      refreshToken: tokens?.refreshToken,
       _id: user._id,
     });
+
   } catch (err) {
     res.status(400).send(err);
   }
@@ -254,32 +298,32 @@ type TokenPayload = {
   _id: string;
 };
 
-export const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const authorization = req.header("authorization");
-  const token = authorization && authorization.split(" ")[1];
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  console.log("Authorization Header:", authHeader);
 
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
-    res.status(401).send("Access Denied");
-    return;
+      res.status(401).send("missing token");
+      return;
   }
   if (!process.env.JWT_SECRET) {
-    res.status(500).send("Server Error");
-    return;
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-    if (err) {
-      res.status(401).send("Access Denied");
+      res.status(500).send("missing auth configuration");
       return;
-    }
-    req.params.userId = (payload as TokenPayload)._id;
-    next();
+  }
+  jwt.verify(token, process.env.JWT_SECRET, (err, data) => {
+      if (err) {
+          console.error("JWT verification failed:", err);
+          res.status(403).send("invalid token");
+          return;
+      }
+      const payload = data as TokenPayload;
+      req.query.user= payload._id;
+      console.log("Extracted User ID:", req.query.user);
+      next();
   });
 };
+
 export default {
   register: register as unknown as express.RequestHandler,
   login: login as unknown as express.RequestHandler,
