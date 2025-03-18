@@ -37,7 +37,10 @@ const router = express.Router();
  *         comments:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/Comment'  # Reference to the Comment schema
+ *             $ref: '#/components/schemas/Comment'
+ *         likesCount:
+ *           type: number
+ *           description: The number of likes on the post.
  *       required:
  *         - postId
  */
@@ -49,7 +52,7 @@ const router = express.Router();
  *     summary: Get all post interactions
  *     tags: [PostInteraction]
  *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Successful response
@@ -57,6 +60,7 @@ const router = express.Router();
  *         description: Internal server error
  */
 router.get('/', authMiddleware, postInteractionController.getAllPosts.bind(postInteractionController));
+
 /**
  * @swagger
  * /postInteraction/user/{userId}:
@@ -64,7 +68,7 @@ router.get('/', authMiddleware, postInteractionController.getAllPosts.bind(postI
  *     summary: Get post interactions by user
  *     tags: [PostInteraction]
  *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -79,28 +83,7 @@ router.get('/', authMiddleware, postInteractionController.getAllPosts.bind(postI
  *         description: Internal server error
  */
 router.get('/user/:userId', authMiddleware, postInteractionController.getByUser.bind(postInteractionController));
-/**
- * @swagger
- * /postInteraction/location/{location}:
- *   get:
- *     summary: Get post interactions by location
- *     tags: [PostInteraction]
- *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
- *     parameters:
- *       - in: path
- *         name: location
- *         required: true
- *         description: Location name
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successful response
- *       500:
- *         description: Internal server error
- */
-router.get('/location/:location', authMiddleware, postInteractionController.getByLocation.bind(postInteractionController));
+
 /**
  * @swagger
  * /postInteraction/postId/{postId}:
@@ -108,7 +91,7 @@ router.get('/location/:location', authMiddleware, postInteractionController.getB
  *     summary: Get comments by post ID
  *     tags: [PostInteraction]
  *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: postId
@@ -123,6 +106,7 @@ router.get('/location/:location', authMiddleware, postInteractionController.getB
  *         description: Internal server error
  */
 router.get('/postId/:postId', authMiddleware, postInteractionController.getCommentsByPostId.bind(postInteractionController));
+
 /**
  * @swagger
  * /postInteraction/comment:
@@ -130,14 +114,21 @@ router.get('/postId/:postId', authMiddleware, postInteractionController.getComme
  *     summary: Add a comment to a post interaction
  *     tags: [PostInteraction]
  *     security:
- *       - bearerAuth: []  # Use bearer token for authentication
+ *       - bearerAuth: []
  *     requestBody:
  *       description: Comment data
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Comment'  # Reference to the Comment schema
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *               comment:
+ *                 type: string
  *           example:
  *             postId: "examplePostId"
  *             userId: "exampleUserId"
@@ -149,5 +140,84 @@ router.get('/postId/:postId', authMiddleware, postInteractionController.getComme
  *         description: Internal server error
  */
 router.post('/comment', authMiddleware, postInteractionController.addComment.bind(postInteractionController));
+
+/**
+ * @swagger
+ * /postInteraction/like:
+ *   post:
+ *     summary: Add a like to a post
+ *     tags: [PostInteraction]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Like data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: string
+ *           example:
+ *             postId: "examplePostId"
+ *     responses:
+ *       200:
+ *         description: Like added successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/like', authMiddleware, postInteractionController.addLike.bind(postInteractionController));
+
+/**
+ * @swagger
+ * /postInteraction/like:
+ *   delete:
+ *     summary: Remove a like from a post
+ *     tags: [PostInteraction]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Like data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: string
+ *           example:
+ *             postId: "examplePostId"
+ *     responses:
+ *       200:
+ *         description: Like removed successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.delete('/like', authMiddleware, postInteractionController.removeLike.bind(postInteractionController));
+
+/**
+ * @swagger
+ * /postInteraction/likes/{postId}:
+ *   get:
+ *     summary: Get likes count for a post
+ *     tags: [PostInteraction]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: ID of the post
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with likes count
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/likes/:postId', authMiddleware, postInteractionController.getLikesCount.bind(postInteractionController));
 
 export default router;
