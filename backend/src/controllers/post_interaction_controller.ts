@@ -7,13 +7,30 @@ class postInteractionController {
 
   async getAllPosts(req: Request, res: Response) {
     console.log("getAllPosts");
+    const userId = req.query.userId as string; // נוודא שיש userId
+
     try {
-      const postInteractions = await Post.find();
-      res.send(postInteractions);
+        const postInteractions = await Post.find();
+        const interactions = await PostInteraction.find();
+
+        // נעבור על כל פוסט ונבדוק אם המשתמש אהב אותו
+        const postsWithLikes = postInteractions.map(post => {
+          const interaction = interactions.find(i => i.postId === post.id);
+          return {
+              ...post.toObject(),
+              likesCount: interaction?.likesCount || 0,
+              likedBy: interaction?.likedBy || [],
+              isLikedByUser: interaction?.likedBy.includes(userId) || false
+          };
+      });
+      
+
+        res.send(postsWithLikes);
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+}
+
 
   async getByUser(req: Request, res: Response) {
     const userId = req.params.userId;
@@ -67,72 +84,85 @@ class postInteractionController {
   // פונקציה חדשה להוספת לייק לפוסט
   async addLike(req: Request, res: Response) {
     console.log("addLike");
-    const { postId } = req.body;
-  
+    const { postId, userId } = req.body;  // נוסיף userId בבקשה
+
     try {
-      let postInteraction = await PostInteraction.findOne({ postId });
-  
-      if (!postInteraction) {
-        postInteraction = new PostInteraction({ postId, likesCount: 0 });
-      }
-  
-      postInteraction.likesCount += 1;
-      await postInteraction.save();
-  
-      res.status(200).json({ 
-        message: 'Like added successfully',
-        likesCount: postInteraction.likesCount 
-      });
+        let postInteraction = await PostInteraction.findOne({ postId });
+
+        if (!postInteraction) {
+            postInteraction = new PostInteraction({ postId, likesCount: 0, likedBy: [] });
+        }
+
+        if (!postInteraction.likedBy.includes(userId)) {  // נבדוק אם המשתמש כבר לחץ לייק
+            postInteraction.likedBy.push(userId);
+            postInteraction.likesCount += 1;
+            await postInteraction.save();
+        }
+
+        res.status(200).json({ 
+            message: 'Like added successfully',
+            likesCount: postInteraction.likesCount,
+            likedBy: postInteraction.likedBy 
+        });
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+}
+
 
   // פונקציה חדשה להסרת לייק מפוסט
   async removeLike(req: Request, res: Response) {
     console.log("removeLike");
-    const { postId } = req.body;
-  
+    const { postId, userId } = req.body; // נוסיף userId בבקשה
+
     try {
-      const postInteraction = await PostInteraction.findOne({ postId });
-  
-      if (!postInteraction) {
-        res.status(404).json({ error: 'Post interaction not found' });
-        return;
-      }
-  
-      if (postInteraction.likesCount > 0) {
-        postInteraction.likesCount -= 1;
-        await postInteraction.save();
-      }
-  
-      res.status(200).json({ 
-        message: 'Like removed successfully',
-        likesCount: postInteraction.likesCount 
-      });
+        let postInteraction = await PostInteraction.findOne({ postId });
+
+        if (!postInteraction) {
+            res.status(404).json({ error: 'Post interaction not found' });
+            return;
+        }
+
+        if (postInteraction.likedBy.includes(userId)) {  // נבדוק אם המשתמש כבר עשה לייק
+            postInteraction.likedBy = postInteraction.likedBy.filter(id => id !== userId);
+            postInteraction.likesCount -= 1;
+            await postInteraction.save();
+        }
+
+        res.status(200).json({ 
+            message: 'Like removed successfully',
+            likesCount: postInteraction.likesCount,
+            likedBy: postInteraction.likedBy 
+        });
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+}
 
   // פונקציה חדשה לקבלת מספר הלייקים של פוסט
   async getLikesCount(req: Request, res: Response) {
     console.log("getLikesCount");
     const postId = req.params.postId;
-  
+    const userId = req.query.userId as string; // נוסיף שליפה של userId
+
     try {
-      const postInteraction = await PostInteraction.findOne({ postId });
-  
-      if (!postInteraction) {
-        res.json({ likesCount: 0 });
-        return;
-      }
-  
-      res.status(200).json({ likesCount: postInteraction.likesCount });
+        const postInteraction = await PostInteraction.findOne({ postId });
+
+        if (!postInteraction) {
+            res.json({ likesCount: 0, isLikedByUser: false });
+            return;
+        }
+
+        const isLikedByUser = postInteraction.likedBy.includes(userId); // בדיקה אם המשתמש אהב
+        res.status(200).json({ 
+            likesCount: postInteraction.likesCount, 
+            isLikedByUser 
+        });
     } catch (error) {
-      res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+}
+
 }
 
 export default new postInteractionController();
