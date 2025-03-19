@@ -19,15 +19,7 @@ const NavBar = () => {
 
     if (refreshToken) {
       try {
-        await apiClient.post(
-          "/auth/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${refreshToken}`,
-            },
-          }
-        );
+        await apiClient.post("/auth/logout", { refreshToken });
       } catch (error) {
         console.error("Error during logout:", error);
       }

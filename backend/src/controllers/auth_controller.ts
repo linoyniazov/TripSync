@@ -7,7 +7,6 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client();
 
 const googleSignin = async (req: Request, res: Response) => {
-    console.log(req.body);
   try {
     const ticket = await client.verifyIdToken({
       idToken: req.body.credential,
@@ -17,36 +16,54 @@ const googleSignin = async (req: Request, res: Response) => {
 
     const payload = ticket.getPayload();
     const email = payload?.email;
-    if (email != null) {
-      let user = await userModel.findOne({ email: email });
+    
+    if (!email) {
+      return res.status(400).send("Email not provided in Google credentials");
+    }
 
-      if (user == null) {
-        const tokens = generateTokens(email); // יצירת טוקנים
-        user = await userModel.create({
-         username: payload.name,
-          email: email,
-          password: " ",
-          profileImage: payload.picture,
-          refreshTokens: tokens ? [tokens.refreshToken as string] : [], // ✅ הוספת refreshToken למשתמש
-        });
-      }
-      const tokens = generateTokens(user._id.toString());
-       // ודא שה-refreshToken נוסף לרשימה
+    let user = await userModel.findOne({ email: email });
+
+    if (!user) {
+      // יצירת משתמש חדש
+      user = await userModel.create({
+        username: payload.name,
+        email: email,
+        password: " ",
+        profileImage: payload.picture,
+        refreshTokens: [], // מאתחלים מערך ריק
+      });
+    }
+
+    // יצירת טוקנים חדשים
+    const tokens = generateTokens(user._id.toString());
+    if (!tokens) {
+      return res.status(500).send("Failed to generate tokens");
+    }
+
+    // עדכון מערך ה-refresh tokens
     if (!user.refreshTokens) {
       user.refreshTokens = [];
     }
-      res.status(200).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        profileImage: user.profileImage,
-        ...tokens,
-      });
-    }
+    user.refreshTokens.push(tokens.refreshToken);
+    
+    // שמירת השינויים בדאטהבייס
+    await user.save();
+
+    // שליחת התשובה
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (err: any) {
+    console.error("Google sign in error:", err);
     return res.status(400).send(err.message);
   }
 };
+
 const register = async (req: Request, res: Response): Promise<Response> => {
   try {
     const username = req.body.username;
@@ -71,13 +88,19 @@ const register = async (req: Request, res: Response): Promise<Response> => {
       email: email,
       password: hashedPassword,
       profileImage: profileImage,
-      // refreshTokens: [] // Initialize refreshTokens array
+      refreshTokens: [] // Initialize refreshTokens array
     });
-    // ✅ יצירת טוקנים
+
+    // Generate tokens
     const tokens = generateTokens(user._id);
     if (!tokens) {
       return res.status(500).send("Failed to generate tokens");
     }
+
+     // Add refresh token to user's refreshTokens array
+     user.refreshTokens = [tokens.refreshToken];
+     await user.save(); // Save the updated user
+ 
     return res.status(200).json({
       _id: user._id,
       username: user.username,
@@ -119,45 +142,6 @@ const refreshToken = jwt.sign(
   return { accessToken, refreshToken };
 };
 
-// const login = async (req: Request, res: Response) => {
-//   try {
-//     const user = await userModel.findOne({ email: req.body.email });
-//     if (!user) {
-//       res.status(400).send("wrong username or password");
-//       return;
-//     }
-//     const validPassword = await bcrypt.compare(
-//       req.body.password,
-//       user.password
-//     );
-//     if (!validPassword) {
-//       res.status(400).send("wrong username or password");
-//       return;
-//     }
-//     if (!process.env.JWT_SECRET) {
-//       res.status(500).send("Server Error");
-//       return;
-//     }
-//     // generate token
-//     const tokens = generateTokens(user._id);
-//     if (!tokens) {
-//       res.status(500).send("Server Error");
-//       return;
-//     }
-//     if (!user.refreshTokens) {
-//       user.refreshTokens = [];
-//     }
-//     user.refreshTokens.push(tokens.refreshToken);
-//     await user.save();
-//     res.status(200).send({
-//       accessToken: tokens.accessToken,
-//       refreshToken: tokens.refreshToken,
-//       _id: user._id,
-//     });
-//   } catch (err) {
-//     res.status(400).send(err);
-//   }
-// };
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -192,51 +176,95 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
+// const logout = async (req: Request, res: Response) => {
+//   const refreshToken = req.body.refreshToken;
+//   if (!refreshToken) {
+//     res.status(400).send("missing refresh token");
+//     return;
+//   }
+//   //first validate the refresh token
+//   if (!process.env.JWT_REFRESH_SECRET) {
+//     res.status(400).send("missing auth configuration");
+//     return;
+//   }
+//   jwt.verify(
+//     refreshToken,
+//     process.env.JWT_REFRESH_SECRET,
+//     async (err: any, data: any) => {
+//       if (err) {
+//         res.status(403).send("invalid token");
+//         return;
+//       }
+//       const payload = data as TokenPayload;
+//       try {
+//         const user = await userModel.findOne({ _id: payload._id });
+//         if (!user) {
+//           res.status(400).send("invalid token");
+//           return;
+//         }
+//         if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
+//           res.status(400).send("invalid token");
+//           user.refreshTokens = [];
+//           await user.save();
+//           return;
+//         }
+//         const tokens = user.refreshTokens.filter(
+//           (token) => token !== refreshToken
+//         );
+//         user.refreshTokens = tokens;
+//         await user.save();
+//         res.status(200).send("logged out");
+//       } catch (err) {
+//         console.error(err);
+//         res.status(500).send("Internal server error");
+//       }
+//     }
+//   );
+// };
 const logout = async (req: Request, res: Response) => {
   const refreshToken = req.body.refreshToken;
+  
   if (!refreshToken) {
-    res.status(400).send("missing refresh token");
-    return;
+    return res.status(400).json({
+      status: 'error',
+      message: 'Refresh token is required'
+    });
   }
-  //first validate the refresh token
-  if (!process.env.JWT_REFRESH_SECRET) {
-    res.status(400).send("missing auth configuration");
-    return;
-  }
-  jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET,
-    async (err: any, data: any) => {
-      if (err) {
-        res.status(403).send("invalid token");
-        return;
-      }
-      const payload = data as TokenPayload;
-      try {
-        const user = await userModel.findOne({ _id: payload._id });
-        if (!user) {
-          res.status(400).send("invalid token");
-          return;
-        }
-        if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
-          res.status(400).send("invalid token");
-          user.refreshTokens = [];
-          await user.save();
-          return;
-        }
-        const tokens = user.refreshTokens.filter(
-          (token) => token !== refreshToken
-        );
-        user.refreshTokens = tokens;
-        await user.save();
-        res.status(200).send("logged out");
-      } catch (err) {
-        console.error(err);
-        res.status(500).send("Internal server error");
-      }
+
+  try {
+    // מוצאים את המשתמש עם הטוקן הזה
+    const user = await userModel.findOne({ refreshTokens: refreshToken });
+    
+    if (!user) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid refresh token'
+      });
     }
-  );
+
+    if (user.refreshTokens) {
+      // מסירים את הטוקן הספציפי מהמערך
+      user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
+    }
+    
+    // שומרים את השינויים
+    await user.save();
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal server error'
+    });
+  }
 };
+
+
+
 
 const refresh = async (req: Request, res: Response) => {
   const refreshToken = req.body.refreshToken;
