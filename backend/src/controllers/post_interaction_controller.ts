@@ -81,6 +81,75 @@ class postInteractionController {
     }
   }
 
+  async editComment(req: Request, res: Response): Promise<void> {
+    const { postId, commentId, newComment, userId } = req.body;
+  
+    try {
+      const postInteraction = await PostInteraction.findOne({ postId });
+  
+      if (!postInteraction) {
+         res.status(404).json({ error: 'Post interaction not found' });
+         return;
+      }
+  
+      const comment = postInteraction.comments?.find(c => c._id?.toString() === commentId);
+  
+      if (!comment) {
+         res.status(404).json({ error: 'Comment not found' });
+          return;
+      }
+  
+      if (comment.userId !== userId) {
+        res.status(403).json({ error: 'Unauthorized to edit this comment' });
+        return;
+      }
+  
+      comment.comment = newComment;
+      await postInteraction.save();
+  
+      res.status(200).json({ message: 'Comment updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+  
+
+  async deleteComment(req: Request, res: Response): Promise<void> {
+    const { postId, commentId, userId } = req.body;
+  
+    try {
+      const postInteraction = await PostInteraction.findOne({ postId });
+  
+      if (!postInteraction) {
+        res.status(404).json({ error: 'Post interaction not found' });
+        return;
+      }
+  
+      const comment = postInteraction.comments?.find(c => c._id?.toString() === commentId);
+  
+      if (!comment) {
+        res.status(404).json({ error: 'Comment not found' });
+        return;
+      }
+  
+      if (comment.userId !== userId) {
+         res.status(403).json({ error: 'Unauthorized to delete this comment' });
+          return;
+      }
+  
+      postInteraction.comments = postInteraction.comments?.filter(
+        c => c._id?.toString() !== commentId
+      );
+  
+      await postInteraction.save();
+  
+      res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+  
+
   // פונקציה חדשה להוספת לייק לפוסט
   async addLike(req: Request, res: Response) {
     console.log("addLike");
