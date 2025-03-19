@@ -220,4 +220,85 @@ router.delete('/like', authMiddleware, postInteractionController.removeLike.bind
  */
 router.get('/likes/:postId', authMiddleware, postInteractionController.getLikesCount.bind(postInteractionController));
 
+
+/**
+ * @swagger
+ * /postInteraction/comment:
+ *   patch:
+ *     summary: Edit a comment
+ *     tags: [PostInteraction]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: string
+ *               commentId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *               newComment:
+ *                 type: string
+ *           example:
+ *             postId: "examplePostId"
+ *             commentId: "exampleCommentId"
+ *             userId: "exampleUserId"
+ *             newComment: "Updated comment text"
+ *     responses:
+ *       200:
+ *         description: Comment updated successfully
+ *       403:
+ *         description: Unauthorized to edit this comment
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Internal server error
+ */
+// 🆕 עריכת תגובה
+router.patch('/comment', authMiddleware, postInteractionController.editComment.bind(postInteractionController));
+
+/**
+ * @swagger
+ * /postInteraction/comment:
+ *   delete:
+ *     summary: Delete a comment
+ *     tags: [PostInteraction]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               postId:
+ *                 type: string
+ *               commentId:
+ *                 type: string
+ *               userId:
+ *                 type: string
+ *           example:
+ *             postId: "examplePostId"
+ *             commentId: "exampleCommentId"
+ *             userId: "exampleUserId"
+ *     responses:
+ *       200:
+ *         description: Comment deleted successfully
+ *       403:
+ *         description: Unauthorized to delete this comment
+ *       404:
+ *         description: Comment not found
+ *       500:
+ *         description: Internal server error
+ */
+
+// 🆕 מחיקת תגובה
+router.delete('/comment', authMiddleware, postInteractionController.deleteComment.bind(postInteractionController));
+
 export default router;
