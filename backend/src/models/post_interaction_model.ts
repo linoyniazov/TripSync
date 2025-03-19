@@ -1,39 +1,52 @@
-import mongoose from 'mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
+
+// ממשק לתגובה (כולל _id כדי שנוכל לערוך/למחוק תגובה ספציפית)
 export interface IComment {
-    userId: string;
-    comment: string;
+  _id?: mongoose.Types.ObjectId;
+  userId: string;
+  comment: string;
 }
 
+// ממשק למסמך PostInteraction
 export interface IPostInteraction extends Document {
-    postId: string;
-    comments?: IComment[];
-    likesCount: number;
-    likedBy: string[]; // נוסיף מערך של userId-ים כדי לדעת מי לחץ לייק
+  postId: string;
+  comments?: IComment[];
+  likesCount: number;
+  likedBy: string[];
 }
 
-const postInteractionSchema = new mongoose.Schema<IPostInteraction>({
-    postId: {
-        type: String,
-        required: true,
+// סכמת תגובה (מאפשרת אוטומטית יצירת _id לכל תגובה)
+const commentSchema = new Schema<IComment>(
+  {
+    userId: {
+      type: String,
+      required: true,
     },
-    comments: [{
-        userId: {
-            type: String,
-            required: true,
-        },
-        comment: {
-            type: String,
-            required: true,
-        },
-    }],
-    likesCount: {
-        type: Number,
-        default: 0,
-        min: 0
+    comment: {
+      type: String,
+      required: true,
     },
-    likedBy: [{ type: String }] // מערך userId-ים שמייצג את המשתמשים שאהבו את הפוסט
+  },
+  { _id: true } // ← מוודא שמונגוס יוצר מזהה אוטומטי לכל תגובה
+);
+
+// סכמת PostInteraction
+const postInteractionSchema = new Schema<IPostInteraction>({
+  postId: {
+    type: String,
+    required: true,
+  },
+  comments: [commentSchema], // ← שימוש בסכמת תגובות
+  likesCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  likedBy: [{ type: String }],
 });
 
-export default mongoose.model<IPostInteraction>('PostInteraction', postInteractionSchema);
+export default mongoose.model<IPostInteraction>(
+  'PostInteraction',
+  postInteractionSchema
+);
