@@ -17,9 +17,9 @@ const googleSignin = async (req: Request, res: Response) => {
     const payload = ticket.getPayload();
     const email = payload?.email;
     
-    if (!email) {
+    if (!email || email.trim() === "") { // 🛠️ לוודא שלא ריק
       return res.status(400).send("Email not provided in Google credentials");
-    }
+    }    
 
     let user = await userModel.findOne({ email: email });
 
@@ -101,7 +101,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
      user.refreshTokens = [tokens.refreshToken];
      await user.save(); // Save the updated user
  
-    return res.status(200).json({
+    return res.status(201).json({
       _id: user._id,
       username: user.username,
       email: user.email,
@@ -115,6 +115,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
+
 const generateTokens = (
   _id: string
 ): { accessToken: string; refreshToken: string } | null => {
@@ -127,7 +128,7 @@ const generateTokens = (
   }
 
   const accessToken = jwt.sign(
-    { _id: _id },
+    { _id: _id, random: random },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.JWT_EXPIRATION || "24h" } as jwt.SignOptions
 );
@@ -175,52 +176,6 @@ const login = async (req: Request, res: Response) => {
     res.status(400).send(err);
   }
 };
-
-// const logout = async (req: Request, res: Response) => {
-//   const refreshToken = req.body.refreshToken;
-//   if (!refreshToken) {
-//     res.status(400).send("missing refresh token");
-//     return;
-//   }
-//   //first validate the refresh token
-//   if (!process.env.JWT_REFRESH_SECRET) {
-//     res.status(400).send("missing auth configuration");
-//     return;
-//   }
-//   jwt.verify(
-//     refreshToken,
-//     process.env.JWT_REFRESH_SECRET,
-//     async (err: any, data: any) => {
-//       if (err) {
-//         res.status(403).send("invalid token");
-//         return;
-//       }
-//       const payload = data as TokenPayload;
-//       try {
-//         const user = await userModel.findOne({ _id: payload._id });
-//         if (!user) {
-//           res.status(400).send("invalid token");
-//           return;
-//         }
-//         if (!user.refreshTokens || !user.refreshTokens.includes(refreshToken)) {
-//           res.status(400).send("invalid token");
-//           user.refreshTokens = [];
-//           await user.save();
-//           return;
-//         }
-//         const tokens = user.refreshTokens.filter(
-//           (token) => token !== refreshToken
-//         );
-//         user.refreshTokens = tokens;
-//         await user.save();
-//         res.status(200).send("logged out");
-//       } catch (err) {
-//         console.error(err);
-//         res.status(500).send("Internal server error");
-//       }
-//     }
-//   );
-// };
 const logout = async (req: Request, res: Response) => {
   const refreshToken = req.body.refreshToken;
   
