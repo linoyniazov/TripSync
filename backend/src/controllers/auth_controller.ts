@@ -16,10 +16,11 @@ const googleSignin = async (req: Request, res: Response) => {
 
     const payload = ticket.getPayload();
     const email = payload?.email;
-    
-    if (!email || email.trim() === "") { // 🛠️ לוודא שלא ריק
+
+    if (!email || email.trim() === "") {
+      // 🛠️ לוודא שלא ריק
       return res.status(400).send("Email not provided in Google credentials");
-    }    
+    }
 
     let user = await userModel.findOne({ email: email });
 
@@ -44,9 +45,7 @@ const googleSignin = async (req: Request, res: Response) => {
     if (!user.refreshTokens) {
       user.refreshTokens = [];
     }
-    user.refreshTokens.push(tokens.refreshToken);
-    
-    // שמירת השינויים בדאטהבייס
+    user.refreshTokens = [tokens.refreshToken]; // מחליף את כל הטוקנים בחדש
     await user.save();
 
     // שליחת התשובה
@@ -69,7 +68,8 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    const profileImage = req.body.profileImage || "http://localhost:5000/public/avatar.jpeg";
+    const profileImage =
+      req.body.profileImage || "http://localhost:5000/public/avatar.jpeg";
 
     if (!username || !email || !password) {
       return res.status(400).send("Missing email, password or name ");
@@ -79,7 +79,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     if (existingUser) {
       return res.status(406).send("Email already exists");
     }
-    
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -88,7 +88,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
       email: email,
       password: hashedPassword,
       profileImage: profileImage,
-      refreshTokens: [] // Initialize refreshTokens array
+      refreshTokens: [], // Initialize refreshTokens array
     });
 
     // Generate tokens
@@ -97,10 +97,10 @@ const register = async (req: Request, res: Response): Promise<Response> => {
       return res.status(500).send("Failed to generate tokens");
     }
 
-     // Add refresh token to user's refreshTokens array
-     user.refreshTokens = [tokens.refreshToken];
-     await user.save(); // Save the updated user
- 
+    // Add refresh token to user's refreshTokens array
+    user.refreshTokens = [tokens.refreshToken];
+    await user.save(); // Save the updated user
+
     return res.status(201).json({
       _id: user._id,
       username: user.username,
@@ -114,7 +114,6 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     return res.status(500).send("Error registering user");
   }
 };
-
 
 const generateTokens = (
   _id: string
@@ -131,18 +130,16 @@ const generateTokens = (
     { _id: _id, random: random },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.JWT_EXPIRATION || "24h" } as jwt.SignOptions
-);
+  );
 
-const refreshToken = jwt.sign(
-  { _id: _id, random: random },
-  jwtRefreshSecret,
-  { expiresIn: '7d' } as jwt.SignOptions
-);
-
+  const refreshToken = jwt.sign(
+    { _id: _id, random: random },
+    jwtRefreshSecret,
+    { expiresIn: "7d" } as jwt.SignOptions
+  );
 
   return { accessToken, refreshToken };
 };
-
 
 const login = async (req: Request, res: Response) => {
   try {
@@ -151,7 +148,10 @@ const login = async (req: Request, res: Response) => {
       return res.status(400).send("Wrong username or password");
     }
 
-    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
     if (!validPassword) {
       return res.status(400).send("Wrong username or password");
     }
@@ -162,7 +162,7 @@ const login = async (req: Request, res: Response) => {
       user.refreshTokens = [];
     }
     if (tokens) {
-      user.refreshTokens.push(tokens.refreshToken); // ✅ שומרים את ה-refreshToken
+      user.refreshTokens = [tokens.refreshToken]; // מחליפים את כל הרשימה בחדש
     }
     await user.save();
 
@@ -171,55 +171,49 @@ const login = async (req: Request, res: Response) => {
       refreshToken: tokens?.refreshToken,
       _id: user._id,
     });
-
   } catch (err) {
     res.status(400).send(err);
   }
 };
 const logout = async (req: Request, res: Response) => {
   const refreshToken = req.body.refreshToken;
-  
+
   if (!refreshToken) {
     return res.status(400).json({
-      status: 'error',
-      message: 'Refresh token is required'
+      status: "error",
+      message: "Refresh token is required",
     });
   }
 
   try {
     // מוצאים את המשתמש עם הטוקן הזה
     const user = await userModel.findOne({ refreshTokens: refreshToken });
-    
+
     if (!user) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Invalid refresh token'
+        status: "error",
+        message: "Invalid refresh token",
       });
     }
 
     if (user.refreshTokens) {
-      // מסירים את הטוקן הספציפי מהמערך
-      user.refreshTokens = user.refreshTokens.filter(token => token !== refreshToken);
+      user.refreshTokens = []; // ✅ מוחק את כל ה-Tokens
     }
-    
-    // שומרים את השינויים
+
     await user.save();
 
     return res.status(200).json({
-      status: 'success',
-      message: 'Logged out successfully'
+      status: "success",
+      message: "Logged out successfully",
     });
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error("Logout error:", error);
     return res.status(500).json({
-      status: 'error',
-      message: 'Internal server error'
+      status: "error",
+      message: "Internal server error",
     });
   }
 };
-
-
-
 
 const refresh = async (req: Request, res: Response) => {
   const refreshToken = req.body.refreshToken;
@@ -252,18 +246,16 @@ const refresh = async (req: Request, res: Response) => {
           res.status(400).send("invalid token");
           return;
         }
+
+        // ✅ יצירת Access Token ו-Refresh Token חדשים
         const newTokens = generateTokens(user._id.toString());
         if (!newTokens) {
-          user.refreshTokens = [];
-          await user.save();
-          res.status(400).send("missing auth configuration");
+          res.status(500).send("Failed to generate new tokens");
           return;
         }
 
-        user.refreshTokens = user.refreshTokens.filter(
-          (token) => token !== refreshToken
-        );
-        user.refreshTokens.push(newTokens.refreshToken);
+        // ❗ מחליפים את כל ה-Refresh Tokens בחדש
+        user.refreshTokens = [newTokens.refreshToken];
         await user.save();
 
         res.status(200).send({
@@ -276,34 +268,62 @@ const refresh = async (req: Request, res: Response) => {
     }
   );
 };
+//         const newTokens = generateTokens(user._id.toString());
+//         if (!newTokens) {
+//           user.refreshTokens = [];
+//           await user.save();
+//           res.status(400).send("missing auth configuration");
+//           return;
+//         }
+
+//         user.refreshTokens = user.refreshTokens.filter(
+//           (token) => token !== refreshToken
+//         );
+//         user.refreshTokens.push(newTokens.refreshToken);
+//         await user.save();
+
+//         res.status(200).send({
+//           accessToken: newTokens.accessToken,
+//           refreshToken: newTokens.refreshToken,
+//         });
+//       } catch (err) {
+//         res.status(400).send("invalid token");
+//       }
+//     }
+//   );
+// };
 
 type TokenPayload = {
   _id: string;
 };
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers["authorization"];
   console.log("Authorization Header:", authHeader);
 
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(" ")[1];
   if (!token) {
-      res.status(401).send("missing token");
-      return;
+    res.status(401).send("missing token");
+    return;
   }
   if (!process.env.JWT_SECRET) {
-      res.status(500).send("missing auth configuration");
-      return;
+    res.status(500).send("missing auth configuration");
+    return;
   }
   jwt.verify(token, process.env.JWT_SECRET, (err, data) => {
-      if (err) {
-          console.error("JWT verification failed:", err);
-          res.status(403).send("invalid token");
-          return;
-      }
-      const payload = data as TokenPayload;
-      req.query.user= payload._id;
-      console.log("Extracted User ID:", req.query.user);
-      next();
+    if (err) {
+      console.error("JWT verification failed:", err);
+      res.status(401).send("Invalid or expired token");
+      return;
+    }
+    const payload = data as TokenPayload;
+    (req as any).user = payload._id;
+    console.log("Extracted User ID:", (req as any).user);
+    next();
   });
 };
 
