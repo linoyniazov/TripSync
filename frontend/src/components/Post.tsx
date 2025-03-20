@@ -6,6 +6,7 @@ import Comments from "./Comments";
 import AddComment from "./AddComment";
 import ShowComments from "./ShowComments";
 
+
 export interface IPost {
   _id: string;
   city: string;
@@ -36,7 +37,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
         : {};
       try {
         const userResponse = await apiClient.get(`/user/${userId}`, config);
-        setUserName(userResponse.data.userProfile.Name);
+        setUserName(userResponse.data.username);
       } catch (error) {
         console.error("Failed to fetch user name:", error);
       }

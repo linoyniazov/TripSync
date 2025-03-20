@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import  apiClient  from '../services/axiosInstance';
+import apiClient from '../services/axiosInstance';
 import { Card, Spinner } from 'react-bootstrap';
 import { RiChat1Line } from 'react-icons/ri';
 
@@ -10,22 +10,45 @@ interface CommentProps {
 interface IComment {
   userId: string;
   comment: string;
+  username?: string;
 }
 
 const Comments = ({ postId }: CommentProps) => {
   const [comments, setComments] = useState<IComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // שליפה של שם משתמש לפי userId
+  const fetchUsername = async (userId: string): Promise<string> => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const response = await apiClient.get(`/user/${userId}`, config);
+      return response.data.username;
+    } catch (error) {
+      console.error('Error fetching username:', error);
+      return 'Unknown'; // fallback במקרה של כישלון
+    }
+  };
+
   useEffect(() => {
     const fetchComments = async () => {
       try {
         const token = localStorage.getItem('accessToken');
-        const config = token ? {
-            headers: { Authorization: `Bearer ${token}` }
-          } : {};
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
         const response = await apiClient.get(`/postInteraction/postId/${postId}`, config);
+
         if (response.data && response.data.length > 0) {
-          setComments(response.data[0].comments || []);
+          const rawComments = response.data[0].comments || [];
+
+          // שליפה של שמות משתמשים עבור כל תגובה
+          const commentsWithUsernames = await Promise.all(
+            rawComments.map(async (comment: IComment) => {
+              const username = await fetchUsername(comment.userId);
+              return { ...comment, username };
+            })
+          );
+
+          setComments(commentsWithUsernames);
         } else {
           setComments([]);
         }
@@ -74,7 +97,7 @@ const Comments = ({ postId }: CommentProps) => {
               />
               <div>
                 <span className="fw-semibold" style={{ color: "var(--primary-color)" }}>
-                  {comment.userId}
+                  {comment.username}
                 </span>
                 <span className="ms-2 text-muted">
                   {comment.comment}
