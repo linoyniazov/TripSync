@@ -39,7 +39,7 @@ class postController {
 
         try {
             // שליפת userId מתוך ה- JWT (אחרי שה- `authMiddleware` שמר אותו ב- `req.query.user`)
-            const userId = req.query.user;
+            const userId = (req as any).user;
             if (!userId) {
                 return res.status(401).json({ message: "Unauthorized: Invalid token" });
             }
