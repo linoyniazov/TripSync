@@ -11,14 +11,16 @@ import authRoute from "./routes/auth_route";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 import aiRoute from "./routes/ai_route";
-import cors from 'cors';
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:5173'  // הדומיין של הפרונטאנד
-}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  next();
+});
 app.use("/user", userRoute);
 app.use("/post", postRoute);
 app.use("/postInteraction", postInteraction);
@@ -38,7 +40,9 @@ const options = {
   description: "REST server including authentication using JWT",
   },
 
-  servers: [{url: "http://localhost:5000",},],
+  servers: [{url: "http://localhost:" + process.env.PORT ,},
+  {url: "http://10.10.246.36",},
+  {url: "https://10.10.246.36",}],
   },
   apis: ["./src/routes/*.ts"],
   };

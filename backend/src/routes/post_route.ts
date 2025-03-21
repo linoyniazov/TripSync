@@ -132,7 +132,7 @@ router.post("/", authMiddleware, (req: Request, res: Response) => {
  *         name: limit
  *         schema:
  *           type: integer
- *           default: 10
+ *           default: 3
  *         description: The number of items per page
  *     responses:
  *       200:
