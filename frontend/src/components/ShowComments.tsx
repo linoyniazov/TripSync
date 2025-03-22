@@ -12,13 +12,14 @@ interface IComment {
 
 interface ShowCommentsProps {
   postId: string;
+  onCommentsChanged: () => void; // ✅ חדש
 }
 
-const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
+const ShowComments: React.FC<ShowCommentsProps> = ({ postId, onCommentsChanged }) => {
   const [comments, setComments] = useState<IComment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [commentsCount, setCommentsCount] = useState<number | null>(null); // שונה מ-0 ל-null
+  const [commentsCount, setCommentsCount] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<IComment | null>(null);
   const [editedText, setEditedText] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -69,12 +70,12 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
   }, [postId]);
 
   useEffect(() => {
-    fetchComments(); // שליפה להצגת מספר תגובות כבר מההתחלה
+    fetchComments();
   }, [fetchComments]);
 
   useEffect(() => {
     if (showModal) {
-      fetchComments(); // שליפה כשהמודל נפתח
+      fetchComments();
     }
   }, [showModal, fetchComments]);
 
@@ -116,6 +117,7 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
       });
 
       await fetchComments();
+      onCommentsChanged(); // ✅ גם אחרי עריכה
       setEditingComment(null);
       setEditedText('');
     } catch (error) {
@@ -143,6 +145,7 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
       });
 
       await fetchComments();
+      onCommentsChanged(); // ✅ עדכון מחוץ למודל
       setShowDeleteModal(false);
       setCommentToDelete(null);
     } catch (error) {
@@ -164,7 +167,6 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
         </span>
       </Button>
 
-      {/* Main Comments Modal */}
       <Modal 
         show={showModal} 
         onHide={toggleModal}
@@ -296,7 +298,6 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
