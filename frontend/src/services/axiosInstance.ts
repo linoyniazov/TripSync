@@ -2,7 +2,7 @@ import axios, { CanceledError } from "axios";
 
 export { CanceledError };
 
-const backend_url = import.meta.env.VITE_BACKEND_URL
+const backend_url = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 const apiClient = axios.create({
     baseURL: backend_url, 
 });
@@ -22,18 +22,6 @@ apiClient.interceptors.request.use(
     }
 );
 
-// אינטרספטור לטיפול בשגיאות
-// apiClient.interceptors.response.use(
-//     (response) => response,
-//     (error) => {
-//         if (axios.isCancel(error)) {
-//             console.warn("Request canceled:", error.message);
-//         } else {
-//             console.error("API error:", error);
-//         }
-//         return Promise.reject(error);
-//     }
-// );
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
