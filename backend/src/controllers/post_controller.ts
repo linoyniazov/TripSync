@@ -1,5 +1,8 @@
 import Post, { IPost } from "../models/post_model";
 import { Request, Response } from 'express';
+import fs from "fs";
+import path from "path";
+
 
 class postController {
     async getAll(req: Request, res: Response) {
