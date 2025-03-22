@@ -1,10 +1,19 @@
 import { z } from 'zod';
 
+const knownTLDs = ['com', 'net', 'org', 'co.il', 'gov', 'edu', 'info', 'io', 'dev', 'me'];
+
 const emailSchema = z
   .string()
   .min(1, 'Email is required')
   .email('Invalid email format')
+  .refine(email => {
+    const domain = email.split('.').pop();
+    return domain && knownTLDs.includes(domain);
+  }, {
+    message: 'Email domain is not supported',
+  })
   .transform(email => email.trim().toLowerCase());
+
 
 const passwordSchema = z
   .string()
