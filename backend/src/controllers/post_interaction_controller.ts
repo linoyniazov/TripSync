@@ -7,6 +7,7 @@ class postInteractionController {
 
   async getAllPosts(req: Request, res: Response) {
     console.log("getAllPosts");
+    
     const userId = req.query.userId as string; // נוודא שיש userId
 
     try {
