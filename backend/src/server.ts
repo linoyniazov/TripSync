@@ -11,6 +11,9 @@ import authRoute from "./routes/auth_route";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 import aiRoute from "./routes/ai_route";
+import path from "path";
+
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -27,11 +30,9 @@ app.use("/postInteraction", postInteraction);
 app.use("/file", fileRoute);
 app.use("/public", express.static("public"));
 app.use("/storage", express.static("storage"));
-app.use(express.static("front"));
-
 app.use("/ai", aiRoute);
-
 app.use("/auth", authRoute);
+
 
 const options = {
   definition: {
@@ -49,8 +50,13 @@ const options = {
   },
   apis: ["./src/routes/*.ts"],
   };
+// Swagger (לפני זה)
 const specs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
+app.use(express.static("front"));
+app.use((req, res) => {
+  res.status(200).sendFile(path.join(__dirname, "../../front/index.html"));
+});
 
 const initApp = () => {
   return new Promise<Express>((resolve, reject) => {

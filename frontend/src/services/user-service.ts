@@ -13,11 +13,11 @@ export interface IUser {
 export const registerUser = (user: IUser) => {
   return new Promise<IUser>((resolve, reject) => {
     console.log("User registered successfully!");
-    console.log(user);
     apiClient
-      .post("/auth/register", user)
-      .then((response) => {
-        console.log(response);
+  .post("/auth/register", user)
+  .then((response) => {
+    console.log(response.data); 
+
 
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
@@ -37,11 +37,10 @@ export const registerUser = (user: IUser) => {
 export const loginUser = (user: IUser) => {
   return new Promise<IUser>((resolve, reject) => {
     console.log("User logging in...");
-    console.log(user);
     apiClient
       .post("/auth/login", user)
       .then((response) => {
-        console.log(response);
+        console.log(response.data);
 
         // ✅ שמירת טוקנים ב- localStorage
         localStorage.setItem("accessToken", response.data.accessToken);
