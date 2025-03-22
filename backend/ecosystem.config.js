@@ -2,9 +2,8 @@ module.exports = {
   apps : [{
     name   : "TripSync",
     script : "./dist/src/app.js",
-    env_production:{
+    env_production: {
       NODE_ENV: "production"
     }
   }]
-
 }
