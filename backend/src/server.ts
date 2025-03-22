@@ -27,6 +27,8 @@ app.use("/postInteraction", postInteraction);
 app.use("/file", fileRoute);
 app.use("/public", express.static("public"));
 app.use("/storage", express.static("storage"));
+app.use(express.static("front"));
+
 app.use("/ai", aiRoute);
 
 app.use("/auth", authRoute);
@@ -42,7 +44,8 @@ const options = {
 
   servers: [{url: "http://localhost:" + process.env.PORT ,},
   {url: "http://10.10.246.36",},
-  {url: "https://10.10.246.36",}],
+  {url: "https://10.10.246.36",},
+  {url: "https://node36.cs.colman.ac.il"}],
   },
   apis: ["./src/routes/*.ts"],
   };
