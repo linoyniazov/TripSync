@@ -15,6 +15,7 @@ const ProfilePage = () => {
   const userId = localStorage.getItem("userId") || "";
   const [refreshKey, setRefreshKey] = useState(0);
   const [userData, setUserData] = useState<{ profileImage?: string }>({});
+  console.log(userData);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
