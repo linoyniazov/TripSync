@@ -268,30 +268,6 @@ const refresh = async (req: Request, res: Response) => {
     }
   );
 };
-//         const newTokens = generateTokens(user._id.toString());
-//         if (!newTokens) {
-//           user.refreshTokens = [];
-//           await user.save();
-//           res.status(400).send("missing auth configuration");
-//           return;
-//         }
-
-//         user.refreshTokens = user.refreshTokens.filter(
-//           (token) => token !== refreshToken
-//         );
-//         user.refreshTokens.push(newTokens.refreshToken);
-//         await user.save();
-
-//         res.status(200).send({
-//           accessToken: newTokens.accessToken,
-//           refreshToken: newTokens.refreshToken,
-//         });
-//       } catch (err) {
-//         res.status(400).send("invalid token");
-//       }
-//     }
-//   );
-// };
 
 type TokenPayload = {
   _id: string;
