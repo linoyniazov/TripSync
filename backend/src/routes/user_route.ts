@@ -47,7 +47,7 @@ import { authMiddleware } from "../controllers/auth_controller";
 
 /**
  * @swagger
- * /users:
+ * /user:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
@@ -88,7 +88,7 @@ router.post("/", authMiddleware, userController.create);
 
 /**
  * @swagger
- * /users:
+ * /user:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
@@ -110,7 +110,7 @@ router.get("/", (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   get:
  *     summary: Get user by ID
  *     tags: [Users]
@@ -139,7 +139,7 @@ router.get("/:id", (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /users/{id}:
+ * /user/{id}:
  *   patch:
  *     summary: Update user by ID
  *     tags: [Users]
