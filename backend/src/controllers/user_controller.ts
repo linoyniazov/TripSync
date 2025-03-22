@@ -1,5 +1,7 @@
   import { Request, Response } from "express";
   import UserModel from "../models/user_model";
+  import fs from "fs";
+
   // Create a new user
   export const create = async (req: Request, res: Response) => {
     try {
@@ -43,36 +45,27 @@
       res.status(500).json({ message: "Server error", error });
     }
   };
-  // export const getById = async (req: Request, res: Response) => {
-  //   try {
-  //     const userId = req.params.id;
-  //     const user = await UserModel.findById(userId).select("-password -refreshToken");
-  //     if (!user) {
-  //       return res.status(404).json({ message: "User not found" });
-  //     }
-  //     res.status(200).json({ userProfile: user }); // ✅ מחזירים את הנתונים בתוך userProfile
-  //   } catch (error) {
-  //     res.status(500).json({ message: "Server error", error });
-  //   }
-  // };
-
-
-  // Update user by ID
-
   // export const update = async (req: Request, res: Response) => {
   //   try {
   //     const userId = req.params.id;
   //     const { username, profileImage, bio } = req.body;
 
-  //     // Check if the user exists first
   //     const existingUser = await UserModel.findById(userId);
   //     if (!existingUser) {
   //       return res.status(404).json({ message: "User not found" });
   //     }
 
+  //     const DEFAULT_AVATAR = "http://localhost:5000/public/avatar.jpeg";
+
   //     const updatedUser = await UserModel.findByIdAndUpdate(
   //       userId,
-  //       { username, profileImage, bio },
+  //       {
+  //         username,
+  //         profileImage: profileImage && profileImage !== "null" && profileImage !== "" 
+  //           ? profileImage 
+  //           : existingUser.profileImage || DEFAULT_AVATAR,
+  //         bio,
+  //       },
   //       { new: true, runValidators: true }
   //     ).select("-password -refreshToken");
 
@@ -81,37 +74,38 @@
   //     res.status(500).json({ message: "Server error", error });
   //   }
   // };
+
   export const update = async (req: Request, res: Response) => {
     try {
       const userId = req.params.id;
       const { username, profileImage, bio } = req.body;
-
+  
       const existingUser = await UserModel.findById(userId);
       if (!existingUser) {
         return res.status(404).json({ message: "User not found" });
       }
-
+  
       const DEFAULT_AVATAR = "http://localhost:5000/public/avatar.jpeg";
-
+  
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
         {
           username,
-          profileImage: profileImage && profileImage !== "null" && profileImage !== "" 
-            ? profileImage 
-            : existingUser.profileImage || DEFAULT_AVATAR,
+          profileImage:
+            profileImage && profileImage !== "null" && profileImage !== ""
+              ? profileImage
+              : existingUser.profileImage || DEFAULT_AVATAR,
           bio,
         },
         { new: true, runValidators: true }
       ).select("-password -refreshToken");
-
+  
       res.status(200).json(updatedUser);
     } catch (error) {
       res.status(500).json({ message: "Server error", error });
     }
   };
-
-
+  
 
   // Delete user by ID
   export const deleteUser= async (req: Request, res: Response) => {
