@@ -144,7 +144,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
                     postId={post._id}
                     onCommentAdded={handleCommentAdded}
                   />
-                  <ShowComments postId={post._id} />
+                  <ShowComments key={refreshComments} postId={post._id} />
                 </div>
                 <Comments key={refreshComments} postId={post._id} />
               </div>

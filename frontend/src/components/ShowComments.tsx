@@ -18,12 +18,12 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
   const [comments, setComments] = useState<IComment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [commentsCount, setCommentsCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState<number | null>(null); // שונה מ-0 ל-null
   const [editingComment, setEditingComment] = useState<IComment | null>(null);
   const [editedText, setEditedText] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<IComment | null>(null);
-  
+
   const currentUserId = localStorage.getItem('userId');
 
   const fetchUsername = async (userId: string): Promise<string> => {
@@ -45,18 +45,16 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
         headers: { Authorization: `Bearer ${token}` }
       } : {};
       const response = await apiClient.get(`/postInteraction/postId/${postId}`, config);
-      console.log('API response:', response.data);
       if (response.data && response.data.length > 0) {
         const commentsData = response.data[0].comments || [];
-        
-        // Fetch usernames for all comments
+
         const commentsWithUsernames = await Promise.all(
           commentsData.map(async (comment: IComment) => {
             const username = await fetchUsername(comment.userId);
             return { ...comment, username };
           })
         );
-        
+
         setComments(commentsWithUsernames);
         setCommentsCount(commentsWithUsernames.length);
       } else {
@@ -71,13 +69,22 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
   }, [postId]);
 
   useEffect(() => {
-    fetchComments();
+    fetchComments(); // שליפה להצגת מספר תגובות כבר מההתחלה
   }, [fetchComments]);
 
   useEffect(() => {
     if (showModal) {
-      fetchComments();
+      fetchComments(); // שליפה כשהמודל נפתח
     }
+  }, [showModal, fetchComments]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (showModal) {
+        fetchComments();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
   }, [showModal, fetchComments]);
 
   const toggleModal = () => {
@@ -152,7 +159,9 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
         onClick={toggleModal}
       >
         <RiMessage2Line size={20} />
-        <span>View Comments ({commentsCount})</span>
+        <span>
+          View Comments {commentsCount !== null ? `(${commentsCount})` : '...'}
+        </span>
       </Button>
 
       {/* Main Comments Modal */}
@@ -165,7 +174,9 @@ const ShowComments: React.FC<ShowCommentsProps> = ({ postId }) => {
         <Modal.Header closeButton>
           <Modal.Title className="d-flex align-items-center gap-2">
             <RiChat1Line style={{ color: "var(--primary-color)" }} />
-            <span>Comments ({commentsCount})</span>
+            <span>
+              Comments {commentsCount !== null ? `(${commentsCount})` : ''}
+            </span>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
