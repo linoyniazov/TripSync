@@ -6,7 +6,6 @@ import Comments from "./Comments";
 import AddComment from "./AddComment";
 import ShowComments from "./ShowComments";
 
-
 export interface IPost {
   _id: string;
   city: string;
@@ -45,12 +44,12 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
     const getLikesData = async () => {
       try {
-        const userId = localStorage.getItem("userId"); // נוסיף userId לשליפה
+        const userId = localStorage.getItem("userId");
         const response = await apiClient.get(
           `/postInteraction/likes/${post._id}?userId=${userId}`
         );
         setLikesCount(response.data.likesCount);
-        setIsLiked(response.data.isLikedByUser); // נוסיף את הסטטוס של הלייק
+        setIsLiked(response.data.isLikedByUser);
       } catch (error) {
         console.error("Failed to fetch like data:", error);
       }
@@ -65,7 +64,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
   const handleLikeClick = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const userId = localStorage.getItem("userId"); // נוסיף userId כדי לעדכן לייקים נכונים
+      const userId = localStorage.getItem("userId");
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       if (!isLiked) {
@@ -77,7 +76,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
         setLikesCount((prev) => prev + 1);
       } else {
         await apiClient.delete("/postInteraction/like", {
-          data: { postId: post._id, userId }, // נוסיף את userId לבקשה
+          data: { postId: post._id, userId },
           headers: config.headers,
         });
         setLikesCount((prev) => prev - 1);
@@ -144,8 +143,15 @@ const Post: React.FC<PostProps> = ({ post }) => {
                     postId={post._id}
                     onCommentAdded={handleCommentAdded}
                   />
-                  <ShowComments key={refreshComments} postId={post._id} />
+
+                  {/* ✅ כאן אנחנו מעדכנים גם את ShowComments */}
+                  <ShowComments
+                    key={refreshComments}
+                    postId={post._id}
+                    onCommentsChanged={handleCommentAdded}
+                  />
                 </div>
+
                 <Comments key={refreshComments} postId={post._id} />
               </div>
             </Card.Body>
