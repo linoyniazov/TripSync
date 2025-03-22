@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 const router = express.Router();
 import userController from "../controllers/user_controller";
 import { authMiddleware } from "../controllers/auth_controller";
+import { upload } from "./file_route";
 
 /**
  * @swagger
@@ -177,7 +178,7 @@ router.get("/:id", (req: Request, res: Response) => {
  *       500:
  *         description: Internal server error
  */
-router.patch("/:id", authMiddleware, (req: Request, res: Response) => {
+router.patch("/:id", authMiddleware, upload.single("file"), (req: Request, res: Response) => {
   userController.update(req, res);
 });
 
