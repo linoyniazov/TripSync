@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "prod": "cp .env_prod .env && tsc -p tsconfig_prod.json && node ./dist/src/app.js",
+    "prod": "cp .env_prod .env && tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.js --env production",
     "start": "cp .env_dev .env && tsc && node ./dist/src/app.js",
     "dev": "cp .env_dev .env && nodemon ./src/app.ts",
     "test": "cp .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",

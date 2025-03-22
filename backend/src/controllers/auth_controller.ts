@@ -88,9 +88,9 @@ const register = async (req: Request, res: Response): Promise<Response> => {
       email: email,
       password: hashedPassword,
       profileImage: profileImage,
-      refreshTokens: [], // Initialize refreshTokens array
+      // refreshTokens: [], // Initialize refreshTokens array
     });
-
+    
     // Generate tokens
     const tokens = generateTokens(user._id);
     if (!tokens) {
@@ -101,7 +101,7 @@ const register = async (req: Request, res: Response): Promise<Response> => {
     user.refreshTokens = [tokens.refreshToken];
     await user.save(); // Save the updated user
 
-    return res.status(201).json({
+    return res.status(201).send({
       _id: user._id,
       username: user.username,
       email: user.email,
